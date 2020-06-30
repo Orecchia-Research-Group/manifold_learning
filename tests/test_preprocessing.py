@@ -1,9 +1,6 @@
 from preprocessing import point_collection
 import numpy as np
 
-def dummy_test():
-	assert True
-
 def test_point_collection():
 	points = np.load("data/spherical_toy_data.npy")
 	dist_mat = np.load("data/spherical_toy_dist.npy")
