@@ -2,3 +2,4 @@ __pycache__/*
 data/*
 data/__pycache__/*
 tests/__pycache__/*
+kyle/.ipynb_checkpoints/*
