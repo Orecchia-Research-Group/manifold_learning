@@ -1,6 +1,6 @@
-from manifold_sampling import sample_grassmann as sg
-from mSVD import eigen_calc as ec
-from mSVD import eigen_plot as ep
+from manifold_utils.manifold_sampling import sample_grassmann as sg
+from manifold_utils.mSVD import eigen_calc as ec
+from manifold_utils.mSVD import eigen_plot as ep
 import numpy as np
 import random
 
