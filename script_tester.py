@@ -18,12 +18,15 @@ rng=random.randint(0,dim_mat[0])
 center=cloud_mat[rng,:]
 
 ## Feed cloud_mat and center into the eigen_calc function
-eigval_list=ec(cloud_mat,center,.1,1,.01)
+eigval_list,top_eigvecs=ec(cloud_mat,center,2,.1,1,.01)
 print(np.array(eigval_list))
 print(np.shape(eigval_list))
+print(np.array(top_eigvecs))
+print(np.shape(top_eigvecs))
+
 
 ##Plot
-ep(eigval_list,.1,1,.01)
+#ep(eigval_list,.1,1,.01)
 
 
 
