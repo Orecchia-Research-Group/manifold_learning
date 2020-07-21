@@ -1,4 +1,4 @@
-from triangulation import power_set_bar_empty, all_faces_from_d_simplices, AugmentedDelaunay
+from manifold_utils.triangulation import power_set_bar_empty, all_faces_from_d_simplices, AugmentedDelaunay
 import numpy as np
 
 def test_power_set_bar_empty():

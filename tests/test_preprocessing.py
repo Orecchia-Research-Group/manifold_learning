@@ -1,4 +1,4 @@
-from preprocessing import point_collection
+from manifold_utils.preprocessing import point_collection
 import numpy as np
 
 def test_point_collection():
