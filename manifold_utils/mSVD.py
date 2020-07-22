@@ -1,3 +1,10 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import random
+from scipy.spatial import distance
+import matplotlib.pyplot as plt
+
+
 def hypersphere(npoints, ndim):
     """
     This function creates samples on a unit sphere in desired dimensions.
@@ -7,8 +14,6 @@ def hypersphere(npoints, ndim):
         npoints (int): the number of points to be sampled
         ndim (int): the number of dimensions in which the unit sphere will be sampled
     """
-    # Import necessary packages
-    import numpy as np
 
     vec = np.random.randn(ndim,
                           npoints)  # creates a random sample from a Gaussian distribution in the form of an array of dimensions: ndim x npoints
@@ -33,14 +38,10 @@ def eigen_calc(cloud, center, k, radstart, radend, radint):
         cloud (arr): a multidimensional point cloud array that contains the coordinates of the points in the cloud
         center (arr): the desired point on which the sphere is centered
         k (int): the intrinsic dimension of the data
-	radstart (int): the first radius value of the expanding sphere
+	    radstart (int): the first radius value of the expanding sphere
         radend (int): the final value (included) of the expanding spherical radius
         radint (int): the interval (step size) at which the radius expands
     """
-    # Import necessary packages
-    import numpy as np
-    import random
-    from scipy.spatial import distance
 
     dim_array = np.shape(cloud)  # saves the dimensions of the array
     radii = np.arange(radstart, radend + radint, radint)  # creates a list of the specified radii values
@@ -64,7 +65,7 @@ def eigen_calc(cloud, center, k, radstart, radend, radint):
         eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
         top_eigvecs.append(eigvecs[0:k])
 
-    return[np.array(eigval_list),np.array(top_eigvecs)]
+    return[np.array(eigval_list),np.array(top_eigvecs),X_mat]
 
 
 ### Function for plotting eigenvalues obtained in the above function
@@ -86,9 +87,6 @@ def eigen_plot(eigval_list,radstart,radend,radint):
         radend (int): the final value (included) of the expanding spherical radius
         radint (int): the interval (step size) at which the radius expands
     """
-    # Import necessary packages
-    import matplotlib.pyplot as plt
-    import numpy as np
 
     # Plot the eigenvalues
     radii = np.arange(radstart, radend + radint, radint)  # creates an array of radii values to iterate through
@@ -104,17 +102,18 @@ def eigen_plot(eigval_list,radstart,radend,radint):
 
 ## Function for projecting epsilon-ball vectors onto a hyperplane
 
-def eps_projection(cloud,eigvecs,center):
+def eps_projection(vectors,eigvecs,center):
     """
     This function projects vectors within an epsilon ball onto a hyperplane defined be given eigenvectors.
 
     Parameters:
-        cloud (arr): The set of points (vectors) to be projected onto the hyperplane
+        vectors (arr): The set of points (vectors) to be projected onto the hyperplane
         eigvecs (arr): The set of eigenvectors which create the hyperplane
         center (arr): The center of both the epsilon ball and the hyperplane
     """
 
-    #Import necessary packages
-    
-
-    
+    projections_list = [] # creates an empty array as a projection
+    for i in range(k):
+        projections_list.append(np.dot(vectors[j],eigvecs[j])*eigvecs[j])
+        
+    return(np.sum(projections_list))
