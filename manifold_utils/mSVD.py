@@ -83,7 +83,7 @@ def eigen_plot(eigval_list,radstart,radend,radint):
 
     Parameters:
         eigval_list (list): This is a multidimensional list containing eigenvalues at different radii values
-	radstart (int): the first radius value of the expanding sphere
+    	radstart (int): the first radius value of the expanding sphere
         radend (int): the final value (included) of the expanding spherical radius
         radint (int): the interval (step size) at which the radius expands
     """
@@ -102,7 +102,7 @@ def eigen_plot(eigval_list,radstart,radend,radint):
 
 ## Function for projecting epsilon-ball vectors onto a hyperplane
 
-def eps_projection(vectors,eigvecs,center):
+def eps_projection(vectors,eigvecs,center,k):
     """
     This function projects vectors within an epsilon ball onto a hyperplane defined be given eigenvectors.
 
@@ -110,10 +110,11 @@ def eps_projection(vectors,eigvecs,center):
         vectors (arr): The set of points (vectors) to be projected onto the hyperplane
         eigvecs (arr): The set of eigenvectors which create the hyperplane
         center (arr): The center of both the epsilon ball and the hyperplane
+        k (int): The intrinsic dimensions of the hyperplane
     """
 
     projections_list = [] # creates an empty array as a projection
-    for i in range(k):
+    for j in range(k):
         projections_list.append(np.dot(vectors[j],eigvecs[j])*eigvecs[j])
         
     return(np.sum(projections_list))
