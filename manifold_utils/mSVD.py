@@ -112,9 +112,10 @@ def eps_projection(vectors,eigvecs,center,k):
         center (arr): The center of both the epsilon ball and the hyperplane
         k (int): The intrinsic dimensions of the hyperplane
     """
-
+    
+    newvecs = vectors-center
     projections_list = [] # creates an empty array as a projection
     for j in range(k):
-        projections_list.append(np.dot(vectors[j],eigvecs[j])*eigvecs[j])
+        projections_list.append(np.dot(newvecs[:,:j],eigvecs[j])*eigvecs[j])
         
     return(np.sum(projections_list))
