@@ -11,3 +11,10 @@ def test_hypersphere():
 		points = hypersphere(n, d)
 		for j in range(n):
 			assert np.isclose(np.linalg.norm(points[:, j]), 1)
+
+
+def test_eigencalc():
+    """
+    Test
+    """
+    
