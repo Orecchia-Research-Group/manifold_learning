@@ -1,4 +1,4 @@
-from manifold_utils.mSVD import hypersphere, eigen_calc
+from manifold_utils.mSVD import hypersphere, eigen_calc, eps_projection
 import numpy as np
 
 def test_hypersphere():
@@ -13,8 +13,19 @@ def test_hypersphere():
 			assert np.isclose(np.linalg.norm(points[:, j]), 1)
 
 
-def test_eigencalc():
+### def test_eigencalc():
+
+
+
+
+def test_eps_projection():
     """
-    Test
+    Test that the function maps to the proper points in k dimensions
     """
-    
+    vectors = [[4,2,5,7,6,4,2],[3,5,6,1,3,2,2]]
+    eigvecs = [[1,0,0,0,0,0],[0,1,0,0,0,0],[0,0,1,0,0,0],[0,0,0,1,0,0],[0,0,0,0,1,0],[0,0,0,0,0,1]]
+    mapped_points = [[4,2,5,7,6,4],[3,5,6,1,3,2]]
+    center = [0,0,0,0,0,0]
+    k=6
+
+    assert eps_projection(vectors,eigvecs,center,k) == np.sum(mapped_points)
