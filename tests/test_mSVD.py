@@ -22,10 +22,10 @@ def test_eps_projection():
     """
     Test that the function maps to the proper points in k dimensions
     """
-    vectors = [[4,2,5,7,6,4,2],[3,5,6,1,3,2,2]]
-    eigvecs = [[1,0,0,0,0,0],[0,1,0,0,0,0],[0,0,1,0,0,0],[0,0,0,1,0,0],[0,0,0,0,1,0],[0,0,0,0,0,1]]
-    mapped_points = [[4,2,5,7,6,4],[3,5,6,1,3,2]]
-    center = [0,0,0,0,0,0]
+    vectors = np.stack([[4,2,5,7,6,4,2],[3,5,6,1,3,2,2]])
+    eigvecs = np.stack([[1,0,0,0,0,0],[0,1,0,0,0,0],[0,0,1,0,0,0],[0,0,0,1,0,0],[0,0,0,0,1,0],[0,0,0,0,0,1]])
+    mapped_points = np.stack([[4,2,5,7,6,4],[3,5,6,1,3,2]])
+    center = [0,0,0,0,0,0,0]
     k=6
 
     assert eps_projection(vectors,eigvecs,center,k) == np.sum(mapped_points)

@@ -26,11 +26,6 @@ def hypersphere(npoints, ndim):
 
 def eigen_calc(cloud, center, k, radstart, radend, radint):
     """
-    Version 1.0
-    7/14/20
-    Ryan Robinett
-    Kyle Ruark
-
     This function iterates through specidic radii values and performs PCA at the given radius. The PCA values (eigenvalues, eigenvectors) are then saved and returned in a multidimensional list.
     Also, this function requires the numpy, random, and scipy packages for proper use.
 
@@ -72,11 +67,6 @@ def eigen_calc(cloud, center, k, radstart, radend, radint):
 
 def eigen_plot(eigval_list,radstart,radend,radint):
     """
-    Version 1.0
-    7/14/20
-    Ryan Robinett
-    Kyle Ruark
-
     This function plots the multidimensional eigenvalue list created from the eigen_calc function. X-axis corresponds to the radii value, while the y-axis corresponds to the eigenvalues. Each individual line represents a dimension.
     Also, this function requires both the matplotlib and numpy packages.
     Run the code: %matplotlib inline, when in jupyter notebook to display the plot in the notebook.
@@ -116,6 +106,6 @@ def eps_projection(vectors,eigvecs,center,k):
     newvecs = vectors-center
     projections_list = [] # creates an empty array as a projection
     for j in range(k):
-        projections_list.append(np.dot(newvecs[:,:j],eigvecs[j])*eigvecs[j])
+        projections_list.append(np.dot(newvecs[:,:k],eigvecs[j])*eigvecs[j])
         
     return(np.sum(projections_list))
