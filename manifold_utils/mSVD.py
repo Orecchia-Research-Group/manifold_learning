@@ -53,9 +53,7 @@ def eigen_calc(cloud, center, k, radstart, radend, radint):
         dim_X = np.shape(X_mat)  # saves dimensions of matrix for points within the current radius
 
         # Create the covariance matrix and save eigenvalues for each set X
-        mean_X = np.mean(X_mat, axis=0)  # calculates the mean of X
-        X_centered = X_mat - mean_X  # centers the set X by subtracting the mean from each point
-        cov_X = 1 / dim_X[0] * (X_centered.T @ X_centered)  # calculates the covariance of the new centered set
+        cov_X = np.cov(X_mat.T)
         eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matrix and stores them in the respective variables
         eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
         top_eigvecs.append(eigvecs[0:k])
