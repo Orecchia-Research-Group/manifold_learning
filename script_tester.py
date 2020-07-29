@@ -5,21 +5,21 @@ from manifold_utils.mSVD import eps_projection
 from manifold_utils.mSVD import hypersphere
 import numpy as np
 import random
-
+import math
 
 
 ## Recreate figure 1
 hs=hypersphere(1000,10)
 hs=np.stack(hs, axis=1)
 #print(hs)
-print(np.shape(hs))
+#print(np.shape(hs))
 zeros_mat=np.zeros((1000,90))
-print(np.shape(zeros_mat))
+#print(np.shape(zeros_mat))
 new_hs=np.append(hs,zeros_mat,axis=1)
 #print(new_hs)
 #print(np.shape(new_hs))
 hs_noisy=new_hs+np.random.randn(1000,100)*.1
-print(hs_noisy)
+#print(hs_noisy)
 dim_mat=np.shape(hs_noisy)
 rng=random.randint(0,dim_mat[0])
 center=hs_noisy[rng,:]
