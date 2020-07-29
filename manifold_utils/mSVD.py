@@ -53,7 +53,7 @@ def eigen_calc(cloud, center, k, radstart, radend, radint):
         dim_X = np.shape(X_mat)  # saves dimensions of matrix for points within the current radius
 
         # Create the covariance matrix and save eigenvalues for each set X
-        cov_X = np.cov(X_mat.T)
+        cov_X = np.cov(X_mat, rowvar=False)
         eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matrix and stores them in the respective variables
         eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
         top_eigvecs.append(eigvecs[0:k])
