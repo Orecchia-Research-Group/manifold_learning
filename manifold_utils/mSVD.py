@@ -24,27 +24,40 @@ def hypersphere(npoints, ndim):
 
 ### Function for obtaining eigenvalues while iterating through radii
 
-def eigen_calc(cloud, center, k, radstart, radend, radint):
+def eigen_calc(cloud, center_ind, k, radint = .01):
     """
     This function iterates through specidic radii values and performs PCA at the given radius. The PCA values (eigenvalues, eigenvectors) are then saved and returned in a multidimensional list.
     Also, this function requires the numpy, random, and scipy packages for proper use.
 
     Parameters:
         cloud (arr): a multidimensional point cloud array that contains the coordinates of the points in the cloud
-        center (arr): the desired point on which the sphere is centered
+        center_ind (int): the index of the desired point on which the sphere is centered
         k (int): the intrinsic dimension of the data
-	    radstart (int): the first radius value of the expanding sphere
-        radend (int): the final value (included) of the expanding spherical radius
-        radint (int): the interval (step size) at which the radius expands
+	    # radstart (int): the first radius value of the expanding sphere
+        # radend (int): the final value (included) of the expanding spherical radius
+        radint (int): Default = .01; the interval (step size) at which the radius expands
     """
 
     dim_array = np.shape(cloud)  # saves the dimensions of the array
-    radii = np.arange(radstart, radend + radint, radint)  # creates a list of the specified radii values
     eigval_list = []  # creates empty list to store eigenvalues
     top_eigvecs = []  # creates empyt list in order to store the egenvectors of the intrinsic dimension
+    dist_mat = np.zeros(dim_array[0]) # creates an empty n x n matrix 
+    
+    # Fill in empty matrix with distances from each point to each other
+    for i in range(dim_array[0]):
+        for j in range(dim_array[0]):
+            dist_mat[i,j] = np.linalg.norm(cloud[i,:]-cloud[j,:]) 
+
+    # Select the distance vector to work with based on the center_ind
+    dist_vec = dist_mat[center_ind,:].copy()
+    sorted_vec = np.sort(dist_vec)
+    
+    for i in range(len(sorted_vec)):  # iterates through each point
+    
+
 
     # Find the points on the hypersphere within each radii
-    for i in radii:  # iterates through each radii value
+    for i in range(len(sorted_vec)):  # iterates through each point
         X = []  # creates an empty array to be filled in with the values on the hypersphere that fall within the ball radii
         for j in np.arange(0, dim_array[0]):  # iterates through array of index values for each point
             if distance.euclidean(cloud[j, :],center) <= i:  # selects points whose distance to center is shorter than the length of the radius

@@ -18,7 +18,7 @@ zeros_mat=np.zeros((1000,90))
 new_hs=np.append(hs,zeros_mat,axis=1)
 #print(new_hs)
 #print(np.shape(new_hs))
-hs_noisy=new_hs+np.random.randn(1000,100)*.1
+hs_noisy=new_hs+np.random.randn(1000,100)*math.sqrt(.1)
 #print(hs_noisy)
 dim_mat=np.shape(hs_noisy)
 rng=random.randint(0,dim_mat[0])
