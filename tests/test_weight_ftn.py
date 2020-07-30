@@ -1,5 +1,5 @@
 import numpy as np
-from moving_least_squares import weight, weight_scaled, dweight, dweight_scaled, ddweight, ddweight_scaled
+from mls.moving_least_squares import weight, weight_scaled, dweight, dweight_scaled, ddweight, ddweight_scaled
 
 def test_weight():
 	"""
