@@ -41,7 +41,7 @@ def eigen_calc(cloud, center_ind, k, radint = .01):
     dim_array = np.shape(cloud)  # saves the dimensions of the array
     eigval_list = []  # creates empty list to store eigenvalues
     top_eigvecs = []  # creates empyt list in order to store the egenvectors of the intrinsic dimension
-    dist_mat = np.zeros(dim_array[0]) # creates an empty n x n matrix 
+    dist_mat = np.zeros((dim_array[0],dim_array[0]) # creates an empty n x n matrix 
     
     # Fill in empty matrix with distances from each point to each other
     for i in range(dim_array[0]):
@@ -51,25 +51,35 @@ def eigen_calc(cloud, center_ind, k, radint = .01):
     # Select the distance vector to work with based on the center_ind
     dist_vec = dist_mat[center_ind,:].copy()
     sorted_vec = np.sort(dist_vec)
-    
-    for i in range(len(sorted_vec)):  # iterates through each point
-    
+    indices = [*range(len(sorted_vec))]
+    indices.sort(key=lambda x: dist_vec[x]) # sorts indices (of original points) in order from smallest distance to largest
+    radii = [*np.arange(dist_vec[5],dist_vec[-1]+radint,radint)]
+    shapes = [] # creates empty list to store shapes of X
 
-
-    # Find the points on the hypersphere within each radii
-    for i in range(len(sorted_vec)):  # iterates through each point
-        X = []  # creates an empty array to be filled in with the values on the hypersphere that fall within the ball radii
-        for j in np.arange(0, dim_array[0]):  # iterates through array of index values for each point
-            if distance.euclidean(cloud[j, :],center) <= i:  # selects points whose distance to center is shorter than the length of the radius
-                X.append(cloud[j, :])  # appends selected points to the array X
+    for i in radii:
+        X = []
+        for j in range(len(sorted_vec)):
+            if sorted_vec[j] <= i:
+                X.append(cloud[indices[j], :])
         X_mat = np.vstack(X)  # creates a 'matrix' by vertically stacking the elements of the list
         dim_X = np.shape(X_mat)  # saves dimensions of matrix for points within the current radius
+        shapes.append(dim_X)
+        
 
         # Create the covariance matrix and save eigenvalues for each set X
-        cov_X = np.cov(X_mat, rowvar=False)
-        eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matrix and stores them in the respective variables
-        eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
-        top_eigvecs.append(eigvecs[0:k])
+        if radii.index(i) == 0
+            cov_X = np.cov(X_mat, rowvar=False)
+            eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matrix and stores them in t$
+            eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
+            top_eigvecs.append(eigvecs[0:k])
+        elif shapes[radii.index(i)] != shapes[radii.index(i)-1]:
+            cov_X = np.cov(X_mat, rowvar=False)
+            eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matr$
+            eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
+            top_eigvecs.append(eigvecs[0:k])
+        else:
+            eigval_list.append(eigval_list[-1])
+            top_eigvecs.append(topeigvecs[-1])
 
     return[np.array(eigval_list),np.array(top_eigvecs),X_mat]
 
