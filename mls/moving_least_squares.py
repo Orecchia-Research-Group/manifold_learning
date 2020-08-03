@@ -159,62 +159,7 @@ class C_1_MLS_oracle:
 		Given a real number x, return the derivative for the MLS
 		approximant for f at x.
 		"""
-		#Importing instance variables to use in calculations
-		m = self.m
-		delta = self.delta
-		points = self.points
-		#d = self.d 
-		F_complete = self.F
-		P_complete = self.P
-
-	
-		# Calculation of I_indices, array which includes indices j_0,...,j_n 
-		# Calculation of I_values which includes x_(j_0),...,x_(j_n)
-		list = []
-		I_indices = np.array(list)
-		I_values = np.array(list)
-
-		total_rows = points.shape[1]
-		for i in range(0, total_rows):
-			if abs(points[0,i] - x) < delta:
-				I_indices = np.append(I_indices,i)
-				I_values = np.append(I_values,points[0,i])
-		
-		#Calculation of #(x), the size of the set I(x)
-		pound = I_values.shape[0]
-		if pound==0:
-			return "Initial input x is too far from data for this value of delta. No values to compute."
-
-		# Calculation of matrix R(x)
-		R = np.empty(shape=(m + 1,1))
-		for i in range(0,m + 1):
-			R[i,0]=x**i
-		
-		## Calculation of matrix D, diagonal matrix with entries equal
-		# to weight function evaluated at points in I_values 
-		D = np.matrix(np.zeros(shape=(pound,pound)))
-		for i in range(0, pound):
-			D[i,i] = dweight_scaled(I_values[i],delta)
-		
-		is_all_zero = np.all((D == 0))
-		if is_all_zero:
-			return "Weight function returned all zeroes. Delta is too small."
-
-		# Slicing matrix P_complete
-		I_min = np.amin(I_indices)
-		I_max = np.amax(I_indices)
-
-		P = P_complete[int(I_min):int(I_max+1),]
-
-		# Slicing matrix F_complete
-		F = F_complete[int(I_min):int(I_max)+1]
-
-		#Calculating the product p*(x)
-		P_t = np.transpose(P)
-		inv = np.linalg.inv(np.matmul(np.matmul(P_t,D),P))
-		prod_1 = np.matmul(np.matmul(np.matmul(F,D), P), inv)
-		p_star = np.matmul(prod_1,R)
-		return p_star[0,0]
+		pass
 
 def main():
 	a = np.linspace(0,6, 100)
