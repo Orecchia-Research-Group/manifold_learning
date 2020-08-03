@@ -18,13 +18,13 @@ zeros_mat=np.zeros((1000,90))
 new_hs=np.append(hs,zeros_mat,axis=1)
 #print(new_hs)
 #print(np.shape(new_hs))
-hs_noisy=new_hs+np.random.randn(1000,100)*math.sqrt(.1)
+hs_noisy=new_hs+np.random.randn(1000,100)*.1
 #print(hs_noisy)
 dim_mat=np.shape(hs_noisy)
 rng=random.randint(0,dim_mat[0])
-center=hs_noisy[rng,:]
-eigval_list,top_eigvecs,X_mat = ec(hs_noisy,center,9,1.1,2.2,.01)
-ep(eigval_list,1.1,2.2,.01)
+#center=hs_noisy[rng,:]
+eigval_list,top_eigvecs,radii = ec(hs_noisy,rng,9)
+ep(eigval_list,radii)
 
 
 

@@ -41,7 +41,7 @@ def eigen_calc(cloud, center_ind, k, radint = .01):
     dim_array = np.shape(cloud)  # saves the dimensions of the array
     eigval_list = []  # creates empty list to store eigenvalues
     top_eigvecs = []  # creates empyt list in order to store the egenvectors of the intrinsic dimension
-    dist_mat = np.zeros((dim_array[0],dim_array[0]) # creates an empty n x n matrix 
+    dist_mat = np.zeros((dim_array[0],dim_array[0])) # creates an empty n x n matrix 
     
     # Fill in empty matrix with distances from each point to each other
     for i in range(dim_array[0]):
@@ -67,7 +67,7 @@ def eigen_calc(cloud, center_ind, k, radint = .01):
         
 
         # Create the covariance matrix and save eigenvalues for each set X
-        if radii.index(i) == 0
+        if radii.index(i) == 0:
             cov_X = np.cov(X_mat, rowvar=False)
             eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matrix and stores them in t$
             eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
@@ -81,12 +81,12 @@ def eigen_calc(cloud, center_ind, k, radint = .01):
             eigval_list.append(eigval_list[-1])
             top_eigvecs.append(topeigvecs[-1])
 
-    return[np.array(eigval_list),np.array(top_eigvecs),X_mat]
+    return[np.array(eigval_list),np.array(top_eigvecs),radii]
 
 
 ### Function for plotting eigenvalues obtained in the above function
 
-def eigen_plot(eigval_list,radstart,radend,radint):
+def eigen_plot(eigval_list,radii):
     """
     This function plots the multidimensional eigenvalue list created from the eigen_calc function. X-axis corresponds to the radii value, while the y-axis corresponds to the eigenvalues. Each individual line represents a dimension.
     Also, this function requires both the matplotlib and numpy packages.
@@ -100,7 +100,7 @@ def eigen_plot(eigval_list,radstart,radend,radint):
     """
 
     # Plot the eigenvalues
-    radii = np.arange(radstart, radend + radint, radint)  # creates an array of radii values to iterate through
+    #radii = np.arange(radstart, radend + radint, radint)  # creates an array of radii values to iterate through
     eig_mat = np.stack(eigval_list, axis=0)  # stacks eigenvalue list into an array (dimensions of N x D)
     dim_eig_mat = np.shape(eig_mat)  # saves dimensions of the eienvalue matrix for easy access
     fig = plt.figure()  # creates a figure plot
