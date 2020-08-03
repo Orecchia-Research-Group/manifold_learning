@@ -41,7 +41,7 @@ def eigen_calc(cloud, center_ind, k, radint = .01):
     dim_array = np.shape(cloud)  # saves the dimensions of the array
     eigval_list = []  # creates empty list to store eigenvalues
     top_eigvecs = []  # creates empyt list in order to store the egenvectors of the intrinsic dimension
-    dist_mat = np.zeros((dim_array[0],dim_array[0]) # creates an empty n x n matrix 
+    dist_mat = np.zeros((dim_array[0],dim_array[0])) # creates an empty n x n matrix 
     
     # Fill in empty matrix with distances from each point to each other
     for i in range(dim_array[0]):
@@ -67,7 +67,7 @@ def eigen_calc(cloud, center_ind, k, radint = .01):
         
 
         # Create the covariance matrix and save eigenvalues for each set X
-        if radii.index(i) == 0
+        if radii.index(i) == 0:
             cov_X = np.cov(X_mat, rowvar=False)
             eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matrix and stores them in t$
             eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
