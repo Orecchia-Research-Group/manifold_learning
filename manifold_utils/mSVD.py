@@ -55,11 +55,11 @@ def eigen_calc(cloud, center_ind, k, radint = .01):
     indices.sort(key=lambda x: dist_vec[x]) # sorts indices (of original points) in order from smallest distance to largest
     radii = [*np.arange(sorted_vec[5],dist_vec[-1]+radint,radint)]
     shapes = [] # creates empty list to store shapes of X
+    X = []
 
     for i in radii:
-        X = []
         for j in range(len(sorted_vec)):
-            if sorted_vec[j] <= i:
+            if (sorted_vec[j] <= i) and ((sorted_vec[j] > radii[radii.index(i)-1]) or (radii.index(i) == 0)) :
                 X.append(cloud[indices[j], :])
         X_mat = np.vstack(X)  # creates a 'matrix' by vertically stacking the elements of the list
         dim_X = np.shape(X_mat)  # saves dimensions of matrix for points within the current radius
