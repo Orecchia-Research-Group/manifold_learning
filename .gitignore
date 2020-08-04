@@ -5,3 +5,5 @@ mls/__pycache__/*
 tests/__pycache__/*
 kyle/.ipynb_checkpoints/*
 manifold_utils/__pycache__/*
+tests/.ipynb_checkpoints/*
+.ipynb_checkpoints/*
