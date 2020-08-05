@@ -52,8 +52,8 @@ def eigen_calc(cloud, center_ind, k, radint = .01):
     dist_vec = dist_mat[center_ind,:].copy()
     sorted_vec = np.sort(dist_vec)
     indices = [*range(len(sorted_vec))]
-    indices.sort(key=lambda x: dist_vec[x]) # sorts indices (of original points) in order from smallest distance to largest
-    radii = [*np.arange(sorted_vec[5],dist_vec[-1]+radint,radint)]
+    indices.sort(key=lambda x: sorted_vec[x]) # sorts indices (of original points) in order from smallest distance to largest
+    radii = [*np.arange(sorted_vec[5], sorted_vec[-1] + radint, radint)]
     shapes = [] # creates empty list to store shapes of X
     X = []
 
