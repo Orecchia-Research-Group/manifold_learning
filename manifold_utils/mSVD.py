@@ -69,7 +69,7 @@ def eigen_calc(cloud, center_ind, k, radint = .01):
         # Create the covariance matrix and save eigenvalues for each set X
         if radii.index(i) == 0:
             cov_X = np.cov(X_mat, rowvar=False)
-            eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matrix and stores them in t$
+            eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matrix
             eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
             top_eigvecs.append(eigvecs[0:k])
         elif shapes[radii.index(i)] != shapes[radii.index(i)-1]:
