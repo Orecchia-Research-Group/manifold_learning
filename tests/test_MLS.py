@@ -10,6 +10,7 @@ def test_MLS():
     # Delta is set to 5 (to exclude one point), m is set to 2
     MLS = C_1_MLS_oracle(points, 5, 2)
 
+    #Testing whether approximation p*(x) equals value calculated by hand
     assert np.isclose(-5, MLS.eval(3)[0])
 
     assert np.isclose(-5, MLS.eval(-3)[0])
@@ -41,9 +42,26 @@ def test3_MLS():
 
     assert np.isclose(8.91666667, MLS.eval(-4)[0])
 
-    # Delta is set to 5 (to exclude two points), m is set to 2
+
+def test_MLS_slope():
+     # Creating arrays of points
+    a = np.array([0,1,2,3])
+    b = np.array([0,1,4,9])
+    points = np.array([a,b])
+
+    # Delta is set to 5 (to include all points), m is set to 2
     MLS = C_1_MLS_oracle(points, 5, 2)
 
-    #assert np.isclose(68.3368, MLS.eval(-7))
+    #Testing whether approximation of derivative p*'(x) equals value calculated by hand
+    assert np.isclose(10, MLS.eval(5)[1])
 
+def test_MLS_slope2():
+     # Creating arrays of points to test
+    a = np.array([-2,-1,0,1,2])
+    b = np.array([0,3,4,3,0])
+    points = np.array([a,b])
 
+    # Delta is set to 5 (to exclude one point), m is set to 2
+    MLS = C_1_MLS_oracle(points, 5, 2)
+
+    assert np.isclose(6, MLS.eval(-3)[1])

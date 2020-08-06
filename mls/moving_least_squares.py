@@ -146,6 +146,8 @@ class C_1_MLS_oracle:
 
 		# Calculating the product p*(x)
 		P_t = np.transpose(P)
+		if P.shape[0] == 1:
+			return "Initial input x is too far from data for this value of delta. Only one value to compute."
 		inv = np.linalg.inv(np.matmul(np.matmul(P_t,D),P))
 		prod_1 = np.matmul(np.matmul(np.matmul(F,D), P), inv)
 		p_star = np.matmul(prod_1,R)
@@ -153,18 +155,18 @@ class C_1_MLS_oracle:
 		# Calculating derivative of matrix D
 		D_prime = np.matrix(np.zeros(shape=(pound,pound)))
 		for i in range(0, pound):
-			D[i,i] = dweight_scaled(I_values[i],delta)
-		
+			D_prime[i,i] = dweight_scaled(I_values[i],delta)
+
 		# Calculating derivative of matrix R(x)
 		R_prime = np.empty(shape=(m + 1,1))
 		for i in range(0,m + 1):
 			if x == 0 and i == 0:
-				R[i,0] = 0
+				R_prime[i,0] = 0
 			elif x == 0 and i == 1:
-				R[i,0] = 1
+				R_prime[i,0] = 1
 			else:
-				R[i,0]=i*(x**(i-1))
-		
+				R_prime[i,0]=i*(x**(i-1))
+
 		# Calculating derivative of p*(x)
 		first_term = np.matmul(np.matmul(np.matmul(D_prime, P), inv), R)
 		second_term = np.subtract(R_prime, np.matmul(np.matmul(np.matmul( np.matmul(P_t,D_prime),P), inv),  R))
@@ -176,13 +178,7 @@ class C_1_MLS_oracle:
 	
 
 def main():
-	a = np.linspace(0,6, 100)
-	b = np.multiply(a,a)
-	#a = [1,2,3,4,5]
-	#b = [2,4,6,8,10]
-	points = np.array([a,b])
-	MLS = C_1_MLS_oracle(points, 10, 2)
-	print(MLS.slope(7))
+	pass
 
 if __name__=="__main__":
 	main()
