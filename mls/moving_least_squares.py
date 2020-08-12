@@ -89,7 +89,7 @@ class C_1_MLS_oracle:
 	def eval(self, x):
 		"""
 		Given a real number x, return the MLS approximant for f
-		at x.
+		at x, and first derivative x'.
 		"""
 		#Importing instance variables to use in calculations
 		m = self.m
@@ -120,7 +120,10 @@ class C_1_MLS_oracle:
 		# Calculation of matrix R(x)
 		R = np.empty(shape=(m + 1,1))
 		for i in range(0,m + 1):
-			R[i,0]=x**i
+			if x == 0 and i == 0:
+				R[i,0]=1
+			else:
+				R[i,0]=x**i
 		
 		## Calculation of matrix D, diagonal matrix with entries equal
 		# to weight function evaluated at points in I_values 
@@ -132,7 +135,6 @@ class C_1_MLS_oracle:
 		if is_all_zero:
 			return "Weight function returned all zeroes. Delta is too small."
 
-		print(D)
 		# Slicing matrix P_complete
 		I_min = np.amin(I_indices)
 		I_max = np.amax(I_indices)
@@ -142,33 +144,41 @@ class C_1_MLS_oracle:
 		# Slicing matrix F_complete
 		F = F_complete[int(I_min):int(I_max)+1]
 
-		#Calculating the product p*(x)
+		# Calculating the product p*(x)
 		P_t = np.transpose(P)
-		print(P_t)
-		print(D)
-		print(np.matmul(P_t,D))
+		if P.shape[0] == 1:
+			return "Initial input x is too far from data for this value of delta. Only one value to compute."
 		inv = np.linalg.inv(np.matmul(np.matmul(P_t,D),P))
 		prod_1 = np.matmul(np.matmul(np.matmul(F,D), P), inv)
 		p_star = np.matmul(prod_1,R)
-		return p_star[0,0]
-		
+
+		# Calculating derivative of matrix D
+		D_prime = np.matrix(np.zeros(shape=(pound,pound)))
+		for i in range(0, pound):
+			D_prime[i,i] = dweight_scaled(I_values[i],delta)
+
+		# Calculating derivative of matrix R(x)
+		R_prime = np.empty(shape=(m + 1,1))
+		for i in range(0,m + 1):
+			if x == 0 and i == 0:
+				R_prime[i,0] = 0
+			elif x == 0 and i == 1:
+				R_prime[i,0] = 1
+			else:
+				R_prime[i,0]=i*(x**(i-1))
+
+		# Calculating derivative of p*(x)
+		first_term = np.matmul(np.matmul(np.matmul(D_prime, P), inv), R)
+		second_term = np.subtract(R_prime, np.matmul(np.matmul(np.matmul( np.matmul(P_t,D_prime),P), inv),  R))
+		third_term = np.matmul(np.matmul(D, P), inv)
+		p_star_prime = np.matmul(F, np.add(first_term, np.matmul(third_term, second_term)))
+
+		# Returns an array containing p*(x) as the first entry and the first derivative of p*(x) as the second entry
+		return np.array([p_star[0,0], p_star_prime[0,0]])
 	
 
-	def slope(self, x):
-		"""
-		Given a real number x, return the derivative for the MLS
-		approximant for f at x.
-		"""
-		pass
-
 def main():
-	a = np.linspace(0,6, 100)
-	b = np.multiply(a,a)
-	#a = [1,2,3,4,5]
-	#b = [2,4,6,8,10]
-	points = np.array([a,b])
-	MLS = C_1_MLS_oracle(points, 10, 2)
-	print(MLS.slope(7))
+	pass
 
 if __name__=="__main__":
 	main()
