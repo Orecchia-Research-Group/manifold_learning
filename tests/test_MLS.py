@@ -65,3 +65,51 @@ def test_MLS_slope2():
     MLS = C_1_MLS_oracle(points, 5, 2)
 
     assert np.isclose(6, MLS.eval(-3)[1])
+
+# Testing insert method
+
+def test_insert():
+    # Creating arrays of points to test
+    a = np.array([-2,-1,0,1,2])
+    b = np.array([0,3,4,3,0])
+    points = np.array([a,b])
+
+    MLS = C_1_MLS_oracle(points, 5, 2)
+
+    a =  np.array([-2,-1,0])
+    b = np.array([0,3,4])
+    points = np.array([a,b])
+
+    MLS2 = C_1_MLS_oracle(points, 5, 2)
+
+    a =  np.array([1,2])
+    b = np.array([3,0])
+    new = np.array([a,b])
+    MLS2.insert(new)
+
+    assert np.isclose(MLS.eval(-3)[0], MLS2.eval(-3)[0])
+    assert np.isclose(MLS.eval(-3)[1], MLS2.eval(-3)[1])
+
+# Testing insert method again
+
+def test_insert_2():
+    # Creating arrays of points to test
+    a = np.array([-5,-3,1,5,8])
+    b = np.array([-4,5,6,9,10])
+    points = np.array([a,b])
+
+    MLS = C_1_MLS_oracle(points, 50, 2)
+
+    a =  np.array([-5,-3,1])
+    b = np.array([-4,5,6])
+    points = np.array([a,b])
+
+    MLS2 = C_1_MLS_oracle(points, 50, 2)
+
+    a =  np.array([5,8])
+    b = np.array([9,10])
+    new = np.array([a,b])
+    MLS2.insert(new)
+
+    assert np.isclose(MLS.eval(4)[0], MLS2.eval(4)[0])
+    assert np.isclose(MLS.eval(4)[1], MLS2.eval(4)[1])

@@ -130,7 +130,6 @@ class C_1_MLS_oracle:
 		D = np.matrix(np.zeros(shape=(pound,pound)))
 		for i in range(0, pound):
 			D[i,i] = weight_scaled(I_values[i],delta)
-		
 		is_all_zero = np.all((D == 0))
 		if is_all_zero:
 			return "Weight function returned all zeroes. Delta is too small."
@@ -175,7 +174,46 @@ class C_1_MLS_oracle:
 
 		# Returns an array containing p*(x) as the first entry and the first derivative of p*(x) as the second entry
 		return np.array([p_star[0,0], p_star_prime[0,0]])
-	
+
+	def insert(self, new_points):
+		"""
+		Given array of (x,y) tuples new_points, add these to the MLS calculation by changing 
+		values of matrix P_complete and F_complete
+		"""
+		m = self.m
+		points = self.points
+		# Calculating new size
+		new_size = points[0].shape[0] + new_points[0].shape[0]
+
+		# Initializing new arrays
+		new_x= np.zeros(new_size)
+		new_y = np.zeros(new_size)
+		new_arr = np.array([new_x,new_y])
+
+		# Appending new values to current points
+		new_arr[0] = np.append(points[0],new_points[0])
+		new_arr[1] = np.append(points[1],new_points[1])
+
+		#Changing value of instance variable
+		self.points = new_arr
+
+		# Calculation of matrix P_complete
+		total_rows = new_arr.shape[1]
+		P_complete = np.matrix(np.empty(shape=(total_rows,m+1)))		
+		for i in range(0,m+1):
+			for j in range(0, new_arr.shape[1]):
+				P_complete[j,i] = new_arr[0,j]**i
+
+		# Calculation of matrix F_complete
+		F_complete = new_arr[1]
+
+		#Defining instance variables to be accessed later
+		self.F = F_complete
+		self.P = P_complete
+		pass
+
+
+
 
 def main():
 	pass
