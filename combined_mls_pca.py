@@ -32,24 +32,30 @@ def mls_pca(cloud, center_ind, k, radint = .01):
                 X.append(cloud[indices[j], :])
         X_mat = np.vstack(X)  # creates a 'matrix' by vertically stacking the elements of the list
         dim_X = np.shape(X_mat)  # saves dimensions of matrix for points within the current radius
-        shapes.append(dim_X)    
+        shapes.append(dim_X)
+        
+        t_elements = [i]    
 
         if radii.index(i) == 0:
             cov_X = np.cov(X_mat, rowvar=False)
             eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matrix
             eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
             top_eigvecs.append(eigvecs[0:k])
+            t_elements.extend(eigvals)
         elif shapes[radii.index(i)] != shapes[radii.index(i)-1]:
             cov_X = np.cov(X_mat, rowvar=False)
             eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matr$
             eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
             top_eigvecs.append(eigvecs[0:k])
+            t_elements.extend(eigvals)
         else:
             eigval_list.append(eigval_list[-1])
             top_eigvecs.append(top_eigvecs[-1])
+            t_elements.extend(eigval_list[-1])
 
         # Create tuples list to be fed into MLS
-        #tuples.append(tuple[i,
+        tuples.append(tuple(t_elements))
 
 
-        ### Start if statement for MLS here (within radii for loop)
+        ### Start if statement for MLS here (within radii for loop)... List of tuples stored in 'tuples' variable
+
