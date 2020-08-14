@@ -129,7 +129,7 @@ class C_1_MLS_oracle:
 		# to weight function evaluated at points in I_values 
 		D = np.matrix(np.zeros(shape=(pound,pound)))
 		for i in range(0, pound):
-			D[i,i] = weight_scaled(I_values[i],delta)
+			D[i,i] = weight_scaled(I_values[i]-x,delta)
 		is_all_zero = np.all((D == 0))
 		if is_all_zero:
 			return "Weight function returned all zeroes. Delta is too small."
@@ -154,7 +154,7 @@ class C_1_MLS_oracle:
 		# Calculating derivative of matrix D
 		D_prime = np.matrix(np.zeros(shape=(pound,pound)))
 		for i in range(0, pound):
-			D_prime[i,i] = dweight_scaled(I_values[i],delta)
+			D_prime[i,i] = dweight_scaled(I_values[i]-x,delta)
 
 		# Calculating derivative of matrix R(x)
 		R_prime = np.empty(shape=(m + 1,1))
