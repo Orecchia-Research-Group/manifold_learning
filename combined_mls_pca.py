@@ -1,6 +1,9 @@
 #Import Packages
 import numpy as np
 
+#Import MLS
+from mls.moving_least_squares import weight, weight_scaled, dweight, dweight_scaled, ddweight, ddweight_scaled, C_1_MLS_oracle
+
 def mls_pca(cloud, center_ind, k, radint = .01):
     """
     This function performs PCA and MLS at increasing radii values of an epsilon ball.
@@ -27,6 +30,7 @@ def mls_pca(cloud, center_ind, k, radint = .01):
     tuples = [] #empty list to store tuples
 
     for i in radii:
+        
         for j in range(len(sorted_vec)):
             if (sorted_vec[j] <= i) and ((sorted_vec[j] > radii[radii.index(i)-1]) or (radii.index(i) == 0)) :
                 X.append(cloud[indices[j], :])
@@ -34,7 +38,7 @@ def mls_pca(cloud, center_ind, k, radint = .01):
         dim_X = np.shape(X_mat)  # saves dimensions of matrix for points within the current radius
         shapes.append(dim_X)
         
-        t_elements = [i]    
+        t_elements = [i]
 
         if radii.index(i) == 0:
             cov_X = np.cov(X_mat, rowvar=False)
@@ -42,6 +46,7 @@ def mls_pca(cloud, center_ind, k, radint = .01):
             eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
             top_eigvecs.append(eigvecs[0:k])
             t_elements.extend(eigvals)
+            
         elif shapes[radii.index(i)] != shapes[radii.index(i)-1]:
             cov_X = np.cov(X_mat, rowvar=False)
             eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matr$
@@ -56,6 +61,14 @@ def mls_pca(cloud, center_ind, k, radint = .01):
         # Create tuples list to be fed into MLS
         tuples.append(tuple(t_elements))
 
+        # Create instance of MLS class, otherwise add tuples
+        if radii.index(i) == 0:
+            MLS = C_1_MLS_oracle(tuples, 50, 2)
+        else:
+            MLS.insert(tuple(t_elements))
 
         ### Start if statement for MLS here (within radii for loop)... List of tuples stored in 'tuples' variable
+        if MLS.eval(i)[1] <= 0:
+            break
+
 
