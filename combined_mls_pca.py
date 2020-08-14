@@ -24,8 +24,7 @@ def mls_pca(cloud, center_ind, k, radint = .01):
     radii = [*np.arange(sorted_vec[5], sorted_vec[-1] + radint, radint)]
     shapes = [] # creates empty list to store shapes of X
     X = []
-    tuples = [] #empty list to store tuples
-
+ 
     for i in radii:
         for j in range(len(sorted_vec)):
             if (sorted_vec[j] <= i) and ((sorted_vec[j] > radii[radii.index(i)-1]) or (radii.index(i) == 0)) :
@@ -34,28 +33,27 @@ def mls_pca(cloud, center_ind, k, radint = .01):
         dim_X = np.shape(X_mat)  # saves dimensions of matrix for points within the current radius
         shapes.append(dim_X)
         
-        t_elements = [i]    
+        tuples = []
 
         if radii.index(i) == 0:
             cov_X = np.cov(X_mat, rowvar=False)
             eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matrix
             eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
             top_eigvecs.append(eigvecs[0:k])
-            t_elements.extend(eigvals)
+            for eig in eigvals:
+                tuples.append((i,eig))
         elif shapes[radii.index(i)] != shapes[radii.index(i)-1]:
             cov_X = np.cov(X_mat, rowvar=False)
             eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matr$
             eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
             top_eigvecs.append(eigvecs[0:k])
-            t_elements.extend(eigvals)
+            for eig in eigvals:
+                tuples.append((i,eig))
         else:
             eigval_list.append(eigval_list[-1])
             top_eigvecs.append(top_eigvecs[-1])
-            t_elements.extend(eigval_list[-1])
-
-        # Create tuples list to be fed into MLS
-        tuples.append(tuple(t_elements))
-
+            for eig in eigval_list[-1]:
+                tuples.append((i,eig))
 
         ### Start if statement for MLS here (within radii for loop)... List of tuples stored in 'tuples' variable
 
