@@ -1,6 +1,9 @@
 #Import Packages
 import numpy as np
 
+#Import MLS
+from mls.moving_least_squares import weight, weight_scaled, dweight, dweight_scaled, ddweight, ddweight_scaled, C_1_MLS_oracle
+
 def mls_pca(cloud, center_ind, k, radint = .01):
     """
     This function performs PCA and MLS at increasing radii values of an epsilon ball.
@@ -26,6 +29,7 @@ def mls_pca(cloud, center_ind, k, radint = .01):
     X = []
  
     for i in radii:
+        
         for j in range(len(sorted_vec)):
             if (sorted_vec[j] <= i) and ((sorted_vec[j] > radii[radii.index(i)-1]) or (radii.index(i) == 0)) :
                 X.append(cloud[indices[j], :])
@@ -33,27 +37,37 @@ def mls_pca(cloud, center_ind, k, radint = .01):
         dim_X = np.shape(X_mat)  # saves dimensions of matrix for points within the current radius
         shapes.append(dim_X)
         
-        tuples = []
+        t_elements = [i]
 
         if radii.index(i) == 0:
             cov_X = np.cov(X_mat, rowvar=False)
             eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matrix
             eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
             top_eigvecs.append(eigvecs[0:k])
-            for eig in eigvals:
-                tuples.append((i,eig))
+            t_elements.extend(eigvals)
+            
         elif shapes[radii.index(i)] != shapes[radii.index(i)-1]:
             cov_X = np.cov(X_mat, rowvar=False)
             eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matr$
             eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
             top_eigvecs.append(eigvecs[0:k])
-            for eig in eigvals:
-                tuples.append((i,eig))
+
         else:
             eigval_list.append(eigval_list[-1])
             top_eigvecs.append(top_eigvecs[-1])
-            for eig in eigval_list[-1]:
-                tuples.append((i,eig))
+            t_elements.extend(eigval_list[-1])
+
+        # Create tuples list to be fed into MLS
+        tuples.append(tuple(t_elements))
+
+        # Create instance of MLS class, otherwise add tuples
+        if radii.index(i) == 0:
+            MLS = C_1_MLS_oracle(tuples, 50, 2)
+        else:
+            MLS.insert(tuple(t_elements))
 
         ### Start if statement for MLS here (within radii for loop)... List of tuples stored in 'tuples' variable
+        if MLS.eval(i)[1] <= 0:
+            break
+
 
