@@ -61,7 +61,7 @@ def mls_pca(cloud, center_ind, k, radint = .01):
 
         # Create instance of MLS class, otherwise add tuples
         if radii.index(i) == 0:
-            MLS = C_1_MLS_oracle(pairs, 50, 2)
+            MLS = C_1_MLS_oracle(pairs, 10, 2)
         elif radii.index(i) == 1:
             MLS.insert(pairs)
         else:
