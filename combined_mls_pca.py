@@ -54,17 +54,21 @@ def mls_pca(cloud, center_ind, k, radint = .01):
             eigvals = eigval_list[-1]     
  
         # Set up the list of radii from the tuple (eigenvalues list is already saved as eigvals)
-        rad_list = [i] * len(eigvals) 
+        rad_list = [i] * len(eigvals)
 
+        # Set up array to pass to MLS
+        pairs = np.array([rad_list, eigvals]) 
 
         # Create instance of MLS class, otherwise add tuples
         if radii.index(i) == 0:
-            MLS = C_1_MLS_oracle(tuples, 50, 2)
+            MLS = C_1_MLS_oracle(pairs, 50, 2)
+        elif radii.index(i) == 1:
+            MLS.insert(pairs)
         else:
-            MLS.insert(tuple(t_elements))
-
-        ### Start if statement for MLS here (within radii for loop)... List of tuples stored in 'tuples' variable
-        if MLS.eval(i)[1] <= 0:
-            break
+            MLS.insert(pairs)
+            ### Start if statement for MLS here (within radii for loop)... List of tuples stored in 'tuples' variable
+            if MLS.eval(i)[1] > 0:
+                break
+    return i
 
 
