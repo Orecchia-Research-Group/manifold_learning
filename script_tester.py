@@ -3,6 +3,7 @@ from manifold_utils.mSVD import eigen_calc as ec
 from manifold_utils.mSVD import eigen_plot as ep
 from manifold_utils.mSVD import eps_projection
 from manifold_utils.mSVD import hypersphere
+from combined_mls_pca import mls_pca
 import numpy as np
 import random
 import math
@@ -23,7 +24,7 @@ hs_noisy=new_hs+np.random.randn(1000,100)*.1
 dim_mat=np.shape(hs_noisy)
 rng=random.randint(0,dim_mat[0])
 #center=hs_noisy[rng,:]
-eigval_list,top_eigvecs,radii = ec(hs_noisy,rng,9)
+eigval_list,top_eigvecs,radii = mls_pca(hs_noisy,rng,9)
 ep(eigval_list,radii)
 
 

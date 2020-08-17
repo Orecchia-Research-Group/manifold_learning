@@ -69,6 +69,11 @@ def mls_pca(cloud, center_ind, k, radint = .01):
             ### Start if statement for MLS here (within radii for loop)... List of tuples stored in 'tuples' variable
             if MLS.eval(i)[1] > 0:
                 break
-    return i
+
+    new_radii = radii[:len(eigval_list)]
+
+    if len(eigval_list) == 0:
+        raise ValueError(str(eigval_cache) + '\n\n\n' + str(top_eigvecs) + "\n\n\n" + str(radii))
+    return[np.array(eigval_list),np.array(top_eigvecs),new_radii]
 
 
