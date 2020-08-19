@@ -31,6 +31,13 @@ def mls_pca(cloud, center_ind, k, radint = .01):
 
     #value to use for MLS condition
     comp = k*math.log(k)
+
+    # Conditional variable to track if R_min has been identified
+    min_found = 0
+
+    #Setting R_min to be huge number in order for loop not to cut out early
+    R_min = 2**10
+    R_max = 0
  
     for i in range(len(radii)):        
         for j in range(len(sorted_vec)):
@@ -62,6 +69,8 @@ def mls_pca(cloud, center_ind, k, radint = .01):
  
         # Set up the list of radii from the tuple (eigenvalues list is already saved as eigvals)
         rad_list = [radii[i]]
+        eigvals = np.flip(eigvals)
+
         eigval_top = [eigvals[0]]
         eigval_k_1 = [eigvals[k]]
 
@@ -69,16 +78,11 @@ def mls_pca(cloud, center_ind, k, radint = .01):
         pairs_top = np.array([rad_list, eigval_top]) 
         pairs_k_1 = np.array([rad_list, eigval_k_1])
 
-        # Conditional variable to track if R_min has been identified
-        min_found = 0
-
-        #Setting R_min to be huge number in order for loop not to cut out early
-        R_min = 2**10
 
         # Create instance of MLS class, otherwise add tuples
         if i == 0:
-            MLS_1 = C_1_MLS_oracle(pairs_top, 10, 2)
-            MLS_k_1 = C_1_MLS_oracle(pairs_k_1, 10, 2)
+            MLS_1 = C_1_MLS_oracle(pairs_top, 50, 2)
+            MLS_k_1 = C_1_MLS_oracle(pairs_k_1, 50, 2)
         elif i == 1:
             MLS_1.insert(pairs_top)
             MLS_k_1.insert(pairs_k_1)
@@ -91,14 +95,15 @@ def mls_pca(cloud, center_ind, k, radint = .01):
                 R_min = radii[i]
                 min_found = 1
 
-            if MLS_1.eval(radii[i])[1] >0 and radii[i] > R_min:
+            if (MLS_1.eval(radii[i])[1] <= 0) and min_found==1:
                 R_max = radii[i]
-                break
 
     new_radii = radii[:len(eigval_list)]
 
     if len(eigval_list) == 0:
         raise ValueError(str(eigval_cache) + '\n\n\n' + str(top_eigvecs) + "\n\n\n" + str(radii))
+    print(R_min)
+    print(R_max)
     return[np.array(eigval_list),np.array(top_eigvecs),new_radii, R_min, R_max]
 
 
