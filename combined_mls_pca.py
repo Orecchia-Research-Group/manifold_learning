@@ -1,5 +1,6 @@
 #Import Packages
 import numpy as np
+import math
 
 #Import MLS
 from mls.moving_least_squares import weight, weight_scaled, dweight, dweight_scaled, ddweight, ddweight_scaled, C_1_MLS_oracle
@@ -27,6 +28,9 @@ def mls_pca(cloud, center_ind, k, radint = .01):
     radii = [*np.arange(sorted_vec[5], sorted_vec[-1] + radint, radint)]
     shapes = [] # creates empty list to store shapes of X
     X = []
+
+    #value to use for MLS condition
+    comp = k*math.log(k)
  
     for i in radii:        
         for j in range(len(sorted_vec)):
@@ -35,6 +39,9 @@ def mls_pca(cloud, center_ind, k, radint = .01):
         X_mat = np.vstack(X)  # creates a 'matrix' by vertically stacking the elements of the list
         dim_X = np.shape(X_mat)  # saves dimensions of matrix for points within the current radius
         shapes.append(dim_X)
+
+        # Second value to compare with mls condition
+        ball = len(X)
         
         if radii.index(i) == 0:
             cov_X = np.cov(X_mat, rowvar=False)
@@ -54,26 +61,44 @@ def mls_pca(cloud, center_ind, k, radint = .01):
             eigvals = eigval_list[-1]     
  
         # Set up the list of radii from the tuple (eigenvalues list is already saved as eigvals)
-        rad_list = [i] * len(eigvals)
+        rad_list = [i]
+        eigval_top = [eigvals[0]]
+        eigval_k_1 = [eigvals[k]]
 
-        # Set up array to pass to MLS
-        pairs = np.array([rad_list, eigvals]) 
+        # Set up arrays to pass to MLS
+        pairs_top = np.array([rad_list, eigval_top]) 
+        pairs_k_1 = np.array([rad_list, eigval_k_1])
+
+        # Conditional variable to track if R_min has been identified
+        min_found = 0
+
+        #Setting R_min to be huge number in order for loop not to cut out early
+        R_min = 2**10
 
         # Create instance of MLS class, otherwise add tuples
         if radii.index(i) == 0:
-            MLS = C_1_MLS_oracle(pairs, 0.5, 2)
+            MLS_1 = C_1_MLS_oracle(pairs_top, 10, 2)
+            MLS_k_1 = C_1_MLS_oracle(pairs_k_1, 10, 2)
         elif radii.index(i) == 1:
-            MLS.insert(pairs)
+            MLS_1.insert(pairs_top)
+            MLS_k_1.insert(pairs_k_1)
         else:
-            MLS.insert(pairs)
-            ### Start if statement for MLS here (within radii for loop)... List of tuples stored in 'tuples' variable
-            if MLS.eval(i)[1] > 0:
+            MLS_1.insert(pairs_top)
+            MLS_k_1.insert(pairs_k_1)
+
+            ### Start if statement for MLS here (within radii for loop)
+            if MLS_k_1.eval(i)[1]<0 and ball >= comp and min_found == 0:
+                R_min = i
+                min_found = 1
+
+            if MLS_1.eval(i)[1] >0 and i > R_min:
+                R_max = i
                 break
 
     new_radii = radii[:len(eigval_list)]
 
     if len(eigval_list) == 0:
         raise ValueError(str(eigval_cache) + '\n\n\n' + str(top_eigvecs) + "\n\n\n" + str(radii))
-    return[np.array(eigval_list),np.array(top_eigvecs),new_radii]
+    return[np.array(eigval_list),np.array(top_eigvecs),new_radii, R_min, R_max]
 
 
