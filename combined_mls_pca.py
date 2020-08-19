@@ -32,9 +32,9 @@ def mls_pca(cloud, center_ind, k, radint = .01):
     #value to use for MLS condition
     comp = k*math.log(k)
  
-    for i in radii:        
+    for i in range(len(radii)):        
         for j in range(len(sorted_vec)):
-            if (sorted_vec[j] <= i) and ((sorted_vec[j] > radii[radii.index(i)-1]) or (radii.index(i) == 0)) :
+            if (sorted_vec[j] <= radii[i]) and ((sorted_vec[j] > radii[i-1]) or (i == 0)) :
                 X.append(cloud[indices[j], :])
         X_mat = np.vstack(X)  # creates a 'matrix' by vertically stacking the elements of the list
         dim_X = np.shape(X_mat)  # saves dimensions of matrix for points within the current radius
@@ -43,13 +43,13 @@ def mls_pca(cloud, center_ind, k, radint = .01):
         # Second value to compare with mls condition
         ball = len(X)
         
-        if radii.index(i) == 0:
+        if i == 0:
             cov_X = np.cov(X_mat, rowvar=False)
             eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matrix
             eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
             top_eigvecs.append(eigvecs[0:k])
             
-        elif shapes[radii.index(i)] != shapes[radii.index(i)-1]:
+        elif shapes[i] != shapes[i-1]:
             cov_X = np.cov(X_mat, rowvar=False)
             eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matr$
             eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
@@ -61,7 +61,7 @@ def mls_pca(cloud, center_ind, k, radint = .01):
             eigvals = eigval_list[-1]     
  
         # Set up the list of radii from the tuple (eigenvalues list is already saved as eigvals)
-        rad_list = [i]
+        rad_list = [radii[i]]
         eigval_top = [eigvals[0]]
         eigval_k_1 = [eigvals[k]]
 
@@ -76,10 +76,10 @@ def mls_pca(cloud, center_ind, k, radint = .01):
         R_min = 2**10
 
         # Create instance of MLS class, otherwise add tuples
-        if radii.index(i) == 0:
+        if i == 0:
             MLS_1 = C_1_MLS_oracle(pairs_top, 10, 2)
             MLS_k_1 = C_1_MLS_oracle(pairs_k_1, 10, 2)
-        elif radii.index(i) == 1:
+        elif i == 1:
             MLS_1.insert(pairs_top)
             MLS_k_1.insert(pairs_k_1)
         else:
@@ -87,12 +87,12 @@ def mls_pca(cloud, center_ind, k, radint = .01):
             MLS_k_1.insert(pairs_k_1)
 
             ### Start if statement for MLS here (within radii for loop)
-            if MLS_k_1.eval(i)[1]<0 and ball >= comp and min_found == 0:
-                R_min = i
+            if MLS_k_1.eval(radii[i])[1]<0 and ball >= comp and min_found == 0:
+                R_min = radii[i]
                 min_found = 1
 
-            if MLS_1.eval(i)[1] >0 and i > R_min:
-                R_max = i
+            if MLS_1.eval(radii[i])[1] >0 and radii[i] > R_min:
+                R_max = radii[i]
                 break
 
     new_radii = radii[:len(eigval_list)]
