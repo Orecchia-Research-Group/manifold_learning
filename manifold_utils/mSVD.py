@@ -88,7 +88,7 @@ def eigen_calc(cloud, center_ind, k, radint = .01):
 
 ### Function for plotting eigenvalues obtained in the above function
 
-def eigen_plot(eigval_list,radii):
+def eigen_plot(eigval_list,radii, R_min, R_max):
     """
     This function plots the multidimensional eigenvalue list created from the eigen_calc function. X-axis corresponds to the radii value, while the y-axis corresponds to the eigenvalues. Each individual line represents a dimension.
     Also, this function requires both the matplotlib and numpy packages.
@@ -109,7 +109,7 @@ def eigen_plot(eigval_list,radii):
     axes = fig.add_subplot(111)  # adds x and y axes to the plot
     for i in range(dim_eig_mat[1]):  # iterates through the columns (dimensions) of the eigenvalue matrix
         axes.plot(radii, eig_mat[:, i])  # plots eigenvalues (y-axis) against each radii value (x-axis)
-
+    axes.axvspan(R_min, R_max, alpha=0.5, color = 'red')
     return (plt.show())
 
 

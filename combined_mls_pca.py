@@ -39,7 +39,9 @@ def mls_pca(cloud, center_ind, k, radint = .01):
     R_min = 2**10
     R_max = 0
  
-    for i in range(len(radii)):        
+    for i in range(len(radii)):    
+        if radii[i] > 2.0:
+            break    
         for j in range(len(sorted_vec)):
             if (sorted_vec[j] <= radii[i]) and ((sorted_vec[j] > radii[i-1]) or (i == 0)) :
                 X.append(cloud[indices[j], :])

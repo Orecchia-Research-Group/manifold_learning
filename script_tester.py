@@ -25,7 +25,7 @@ dim_mat=np.shape(hs_noisy)
 rng=random.randint(0,dim_mat[0])
 #center=hs_noisy[rng,:]
 eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(hs_noisy,rng,9)
-ep(eigval_list,radii)
+ep(eigval_list,radii, R_min, R_max)
 
 
 
