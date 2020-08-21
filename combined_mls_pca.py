@@ -5,7 +5,7 @@ import math
 #Import MLS
 from mls.moving_least_squares import weight, weight_scaled, dweight, dweight_scaled, ddweight, ddweight_scaled, C_1_MLS_oracle
 
-def mls_pca(cloud, center_ind, k, radint = .01):
+def mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
     """
     This function performs PCA and MLS at increasing radii values of an epsilon ball.
     """
@@ -13,7 +13,10 @@ def mls_pca(cloud, center_ind, k, radint = .01):
     dim_array = np.shape(cloud)  # saves the dimensions of the array
     eigval_list = []  # creates empty list to store eigenvalues
     top_eigvecs = []  # creates empyt list in order to store the egenvectors of the intrinsic dimension
-    dist_mat = np.zeros((dim_array[0],dim_array[0])) # creates an empty n x n matrix
+    if dist = None:
+        dist_mat = np.zeros((dim_array[0],dim_array[0])) # creates an empty n x n matrix
+    else:
+        dist_mat = dist
 
     # Fill in empty matrix with distances from each point to each other
     for i in range(dim_array[0]):
@@ -41,8 +44,6 @@ def mls_pca(cloud, center_ind, k, radint = .01):
     R_max = 0
  
     for i in range(len(radii)):   
-        if radii[i] > 2.2:
-            break 
          
         for j in range(len(sorted_vec)):
             if (sorted_vec[j] <= radii[i]) and ((sorted_vec[j] > radii[i-1]) or (i == 0)) :
@@ -98,6 +99,8 @@ def mls_pca(cloud, center_ind, k, radint = .01):
             if (abs(MLS_1.eval(radii[i])[1]) <= 0.5) and MLS_1.eval(radii[i])[1]<0 and min_found==1 and max_found == 0:
                 R_max = radii[i]
                 max_found = 1
+                if not(iter):
+                    break
 
             if (MLS_k_1.eval(radii[i])[1]<-0.01) and min_found == 0 and ball >= comp:
                 R_min = radii[i]
