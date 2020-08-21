@@ -1,6 +1,5 @@
 #Import Packages
 import numpy as np
-import math
 
 #Import MLS
 from mls.moving_least_squares import weight, weight_scaled, dweight, dweight_scaled, ddweight, ddweight_scaled, C_1_MLS_oracle
@@ -33,7 +32,7 @@ def mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
     X = []
 
     #value to use for MLS condition
-    comp = k*math.log(k)
+    comp = k*np.log(k)
 
     # Conditional variable to track if R_min has been identified
     min_found = 0
