@@ -7,27 +7,43 @@ from combined_mls_pca import mls_pca
 import numpy as np
 import random
 import math
-
+import sklearn
+from sklearn import datasets
 
 ## Recreate figure 1
-hs=hypersphere(1000,10)
-hs=np.stack(hs, axis=1)
+#hs=hypersphere(1000,10)
+#hs=np.stack(hs, axis=1)
 #print(hs)
 #print(np.shape(hs))
-zeros_mat=np.zeros((1000,90))
+#zeros_mat=np.zeros((1000,90))
 #print(np.shape(zeros_mat))
-new_hs=np.append(hs,zeros_mat,axis=1)
+#new_hs=np.append(hs,zeros_mat,axis=1)
 #print(new_hs)
 #print(np.shape(new_hs))
-hs_noisy=new_hs+np.random.randn(1000,100)*.1
+#hs_noisy=new_hs+np.random.randn(1000,100)*.1
 #print(hs_noisy)
-dim_mat=np.shape(hs_noisy)
-rng=random.randint(0,dim_mat[0])
+#dim_mat=np.shape(hs_noisy)
+#rng=random.randint(0,dim_mat[0])
 #center=hs_noisy[rng,:]
-eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(hs_noisy,rng,9)
+#eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(hs_noisy,rng,9)
+#ep(eigval_list,radii, R_min, R_max)
+
+
+# Grassmann point cloud output
+#cloud=sg(7,6,1000)
+#cloud_mat=np.reshape(cloud,(1000,42))
+#dim_mat=np.shape(cloud_mat)
+#rng=random.randint(0,dim_mat[0])
+##center=cloud_mat[rng,:]
+#eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(cloud_mat,rng,6)
+#ep(eigval_list,radii, R_min, R_max)
+
+# Swiss Roll Test
+points, junk = sklearn.datasets.make_swiss_roll(n_samples=1000,noise=0.3)
+dim_mat=np.shape(points)
+rng=random.randint(0,dim_mat[0])
+eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(points,rng,2)
 ep(eigval_list,radii, R_min, R_max)
-
-
 
 ## Obtain and reshape  cloud point matrix (N x D) from sample_grassmann function
 #cloud=sg(4,3,1000)
