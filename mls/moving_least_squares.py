@@ -1,7 +1,6 @@
 import numpy as np
 import scipy 
 import matplotlib.pyplot as plt
-import math
 
 
 #Defining the weight function
@@ -147,7 +146,13 @@ class C_1_MLS_oracle:
 		P_t = np.transpose(P)
 		if P.shape[0] == 1:
 			return "Initial input x is too far from data for this value of delta. Only one value to compute."
-		inv = np.linalg.inv(np.matmul(np.matmul(P_t,D),P))
+		try:
+			inv = np.linalg.inv(np.matmul(np.matmul(P_t,D),P))
+		except numpy.linalg.LinAlgError:
+			return "Matrix is not invertible. Change input parameters."
+		
+
+		
 		prod_1 = np.matmul(np.matmul(np.matmul(F,D), P), inv)
 		p_star = np.matmul(prod_1,R)
 

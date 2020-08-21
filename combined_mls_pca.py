@@ -12,7 +12,7 @@ def mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
     dim_array = np.shape(cloud)  # saves the dimensions of the array
     eigval_list = []  # creates empty list to store eigenvalues
     top_eigvecs = []  # creates empyt list in order to store the egenvectors of the intrinsic dimension
-    if dist = None:
+    if dist == None:
         dist_mat = np.zeros((dim_array[0],dim_array[0])) # creates an empty n x n matrix
     else:
         dist_mat = dist
