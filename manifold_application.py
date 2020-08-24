@@ -13,6 +13,8 @@ from pymanopt.manifolds import Sphere, Rotations, Stiefel, Oblique, Elliptope
 
 
 
+
+
 ## Recreate figure 1
 #hs=hypersphere(1000,10)
 #hs=np.stack(hs, axis=1)
@@ -58,8 +60,54 @@ from pymanopt.manifolds import Sphere, Rotations, Stiefel, Oblique, Elliptope
 
 
 
-# Sphere Manifold
 
+# Sphere Manifold
+sphere=Sphere(1000,6)
+sphere=sphere.rand()
+dim_mat=np.shape(sphere)
+rng=random.randint(0,dim_mat[0])
+eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(sphere,rng,2)
+
+
+
+
+
+# Rotations Manifold
+rotation=Rotations(20)
+rotation=rotation.rand()
+dim_mat=np.shape(rotation)
+rng=random.randint(0,dim_mat[0])
+eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(rotation,rng,2)
+
+
+
+
+# Stiefel Manifold
+stief=Stiefel(1000,12)
+stief=stief.rand()
+dim_mat=np.shape(stief)
+rng=random.randint(0,dim_mat[0])
+eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(stief,rng,2)
+
+
+
+
+# Oblique Manifold
+obl=Oblique(1000,20)
+obl=obl.rand()
+dim_mat=np.shape(obl)
+rng=random.randint(0,dim_mat[0])
+eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(obl,rng,2)
+
+
+
+
+# Elliptope Manifold
+ellip=Elliptope(1000,20) #Not sure what a good set of values are for this one
+ellip=ellip.rand()
+dim_mat=np.shape(ellip)
+rng=random.randint(0,dim_mat[0])
+eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(ellip,rng,2)
 
 
 
