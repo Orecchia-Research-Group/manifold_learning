@@ -105,7 +105,9 @@ def mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
                 R_min = radii[i]
                 min_found = 1
         
-
+    print(cloud)
+    print(eigval_list)
+    print(cov_X)
     new_radii = radii[:len(eigval_list)]
 
     if len(eigval_list) == 0:
