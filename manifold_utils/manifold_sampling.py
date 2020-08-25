@@ -6,7 +6,10 @@ from tqdm import tqdm
 def sample_grassmann(d, p, n):
 	"""
 	Sample n points from the manifold of p-dimensional subspaces
-	of R^d using pymanopt.manifolds.grassmann.Grassmann.rand
+	of R^d using pymanopt.manifolds.grassmann.Grassmann.rand.
+
+	The resulting point cloud will represent a manifold of (n-p)*p
+	dimensions.
 	"""
 	try:
 		with open("data/grassmann__"+str(d)+"_"+str(p)+"_"+str(n)+".pkl", "rb") as f:
@@ -25,7 +28,9 @@ def sample_grassmann(d, p, n):
 def sample_psd_fixed_rank(d, k, n, norm_bound=None):
 	"""
 	Sample n points from the manifold of d x d PSD matrices of
-	rank k using pymanopt.manifolds.psd.PSDFixedRank.rand
+	rank k using pymanopt.manifolds.psd.PSDFixedRank.rand. The
+	resulting point cloud will represent a manifold of dimension
+	((2*d+1)*k-k**2) / 2.
 	"""
 	if not norm_bound:
 		norm_bound = np.inf
@@ -52,7 +57,9 @@ def sample_psd_fixed_rank(d, k, n, norm_bound=None):
 def sample_rotations_manifold(d, n):
 	"""
 	Sample n points from SO(d) using
-	pymanopt.manifolds.Rotations.rand
+	pymanopt.manifolds.Rotations.rand.
+
+	The resulting point cloud will represent a manifold with d*(d-1)/2 dimensions.
 	"""
 	try:
 		with open("data/rotations__"+str(d)+"_"+str(n)+".pkl", "rb") as f:
@@ -72,7 +79,8 @@ def sample_rotations_manifold(d, n):
 
 def sample_sphere(n,d):
     """
-    Samples n points in a d-dimensional unit sphere
+    Samples n points in a d-dimensional unit sphere. The resulting point cloud
+    will represent a (d-1)-dimensional manifold.
     """
     try:
         with open("data/sphere__"+str(n)+"_"+str(d)+"_"+".pkl", "rb") as f:
@@ -93,7 +101,9 @@ def sample_sphere(n,d):
 
 def sample_stiefel(numsamples,n,p,k=1):
     """
-    
+    Sample n points from the n x p Stiefel matrices using
+    pymanopt.manifolds.Stiefel.rand. The resulting point cloud will represent a
+    manifold of n*p - p*(p+1)/2 dimensions.
     """
     try:
         with open("data/stiefel__"+str(numsamples)+"_"+str(n)+"_"+str(p)+"_"+str(k)+".pkl", "rb") as f:
@@ -112,7 +122,9 @@ def sample_stiefel(numsamples,n,p,k=1):
 
 def sample_oblique(numsamples,m,n):
     """
-    
+    Sample n points from the m x n oblique matrices using
+    pymanopt.manifolds.Oblique.rand. The resulting point cloud will represent a
+    manifold of (m-1)*n dimensions.
     """
     try:
         with open("data/oblique__"+str(numsamples)+"_"+str(m)+"_"+str(n)+".pkl", "rb") as f:
@@ -126,17 +138,4 @@ def sample_oblique(numsamples,m,n):
         points=np.stack(points)
         with open("data/oblique__"+str(numsamples)+"_"+str(m)+"_"+str(n)+".pkl", "wb") as f:
             pkl.dump(points, f)
-    return points
-
-
-
-def sample_elliptope(numsamples,n,k):
-    """
-
-    """
-    points=[]
-    manifold=Elliptope(n,k)
-    for i in tqdm:
-        manifold.rand()
-
     return points
