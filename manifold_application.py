@@ -62,9 +62,9 @@ from pymanopt.manifolds import Sphere, Rotations, Stiefel, Oblique, Elliptope
 
 
 # Sphere Manifold
-#points=sample_sphere(1000,9)
-#print(points)
-#print(np.shape(points))
+points=sample_sphere(1000,9)
+print(points)
+print(np.shape(points))
 #dim_mat=np.shape(sphere)
 #rng=random.randint(0,dim_mat[0])
 #eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(sphere,rng,2)
@@ -74,7 +74,7 @@ from pymanopt.manifolds import Sphere, Rotations, Stiefel, Oblique, Elliptope
 
 
 # Stiefel Manifold
-points=sample_stiefel(1000,4,3)
+points=sample_stiefel(1000,7,3)
 print(points)
 print(np.shape(points))
 
@@ -82,7 +82,7 @@ print(np.shape(points))
 
 
 # Oblique Manifold
-points=sample_stiefel(1000,6,3)
+points=sample_stiefel(100,3,2)
 print(points)
 print(np.shape(points))
 
