@@ -1,4 +1,4 @@
-from manifold_utils.manifold_sampling import sample_grassmann as sg
+from manifold_utils.manifold_sampling import sample_grassmann, sample_sphere, sample_stiefel, sample_oblique
 from manifold_utils.mSVD import eigen_calc as ec
 from manifold_utils.mSVD import eigen_plot as ep
 from manifold_utils.mSVD import eps_projection
@@ -38,7 +38,7 @@ from pymanopt.manifolds import Sphere, Rotations, Stiefel, Oblique, Elliptope
 
 
 # Grassmann point cloud output
-#cloud=sg(7,6,1000)
+#cloud=sample_grassmann(7,6,1000)
 #cloud_mat=np.reshape(cloud,(1000,42))
 #dim_mat=np.shape(cloud_mat)
 #rng=random.randint(0,dim_mat[0])
@@ -62,55 +62,29 @@ from pymanopt.manifolds import Sphere, Rotations, Stiefel, Oblique, Elliptope
 
 
 # Sphere Manifold
-sphere=Sphere(1000,6)
-sphere=sphere.rand()
-dim_mat=np.shape(sphere)
-rng=random.randint(0,dim_mat[0])
-eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(sphere,rng,2)
-
-
-
-
-
-# Rotations Manifold
-rotation=Rotations(20)
-rotation=rotation.rand()
-dim_mat=np.shape(rotation)
-rng=random.randint(0,dim_mat[0])
-eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(rotation,rng,2)
+#points=sample_sphere(1000,9)
+#print(points)
+#print(np.shape(points))
+#dim_mat=np.shape(sphere)
+#rng=random.randint(0,dim_mat[0])
+#eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(sphere,rng,2)
+#ep(eigval_list,radii, R_min, R_max)
 
 
 
 
 # Stiefel Manifold
-stief=Stiefel(1000,12)
-stief=stief.rand()
-dim_mat=np.shape(stief)
-rng=random.randint(0,dim_mat[0])
-eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(stief,rng,2)
+points=sample_stiefel(1000,4,3)
+print(points)
+print(np.shape(points))
 
 
 
 
 # Oblique Manifold
-obl=Oblique(1000,20)
-obl=obl.rand()
-dim_mat=np.shape(obl)
-rng=random.randint(0,dim_mat[0])
-eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(obl,rng,2)
-
-
-
-
-# Elliptope Manifold
-ellip=Elliptope(1000,20) #Not sure what a good set of values are for this one
-ellip=ellip.rand()
-dim_mat=np.shape(ellip)
-rng=random.randint(0,dim_mat[0])
-eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(ellip,rng,2)
-
-
-
+points=sample_stiefel(1000,6,3)
+print(points)
+print(np.shape(points))
 
 
 

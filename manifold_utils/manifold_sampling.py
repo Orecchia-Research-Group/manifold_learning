@@ -1,5 +1,5 @@
 import numpy as np
-from pymanopt.manifolds import Grassmann, PSDFixedRank, Rotations
+from pymanopt.manifolds import Grassmann, PSDFixedRank, Rotations, Sphere, Stiefel, Oblique
 import pickle as pkl
 from tqdm import tqdm
 
@@ -67,3 +67,76 @@ def sample_rotations_manifold(d, n):
 		with open("data/rotations__"+str(d)+"_"+str(n)+".pkl", "wb") as f:
 			pkl.dump(points, f)
 	return points
+
+
+
+def sample_sphere(n,d):
+    """
+    Samples n points in a d-dimensional unit sphere
+    """
+    try:
+        with open("data/sphere__"+str(n)+"_"+str(d)+"_"+".pkl", "rb") as f:
+            points = pkl.load(f)
+    except FileNotFoundError:
+        print("Sampling "+str(n)+" points from Sphere("+str(d)+")...")
+        points=[]
+        manifold=Sphere(d)
+ 
+        for i in tqdm(range(n)):
+            points.append(manifold.rand())
+        points=np.stack(points)
+        with open("data/sphere__"+str(n)+"_"+str(d)+"_"+".pkl", "wb") as f:
+            pkl.dump(points, f)
+    return points
+
+
+
+def sample_stiefel(numsamples,n,p,k=1):
+    """
+    
+    """
+    try:
+        with open("data/stiefel__"+str(numsamples)+"_"+str(n)+"_"+str(p)+"_"+str(k)+".pkl", "rb") as f:
+            points = pkl.load(f)
+    except FileNotFoundError:
+        points=[]
+        manifold=Stiefel(n,p,k=1)
+
+        for i in tqdm(range(numsamples)):
+            points.append(np.reshape(manifold.rand(),(n*p)))
+        points=np.stack(points)
+        with open("data/stiefel__"+str(numsamples)+"_"+str(n)+"_"+str(p)+"_"+str(k)+".pkl", "wb") as f:
+            pkl.dump(points, f)
+    return points
+
+
+def sample_oblique(numsamples,m,n):
+    """
+    
+    """
+    try:
+        with open("data/oblique__"+str(numsamples)+"_"+str(m)+"_"+str(n)+".pkl", "rb") as f:
+            points = pkl.load(f)
+    except FileNotFoundError:
+        points=[]
+        manifold=Oblique(m,n)
+
+        for i in tqdm(range(numsamples)):
+            points.append(np.reshape(manifold.rand(),(m*n)))
+        points=np.stack(points)
+        with open("data/oblique__"+str(numsamples)+"_"+str(m)+"_"+str(n)+".pkl", "wb") as f:
+            pkl.dump(points, f)
+    return points
+
+
+
+def sample_elliptope(numsamples,n,k):
+    """
+
+    """
+    points=[]
+    manifold=Elliptope(n,k)
+    for i in tqdm:
+        manifold.rand()
+
+    return points
