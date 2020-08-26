@@ -62,29 +62,38 @@ from pymanopt.manifolds import Sphere, Rotations, Stiefel, Oblique, Elliptope
 
 
 # Sphere Manifold
-points=sample_sphere(1000,9)
-print(points)
-print(np.shape(points))
-#dim_mat=np.shape(sphere)
+#points=sample_sphere(1000,15)
+#print(points)
+#print(np.shape(points))
+#dim_mat=np.shape(points)
 #rng=random.randint(0,dim_mat[0])
-#eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(sphere,rng,2)
+#eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(points,rng,14)
 #ep(eigval_list,radii, R_min, R_max)
 
 
 
 
 # Stiefel Manifold
-points=sample_stiefel(1000,7,3)
-print(points)
-print(np.shape(points))
-
+#points=sample_stiefel(1000,7,3)
+#print(points)
+#print(np.shape(points))
+#points=np.reshape(points,(1000,21))
+#dim_mat=np.shape(points)
+#rng=random.randint(0,dim_mat[0])
+#eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(points,rng,9)
+#ep(eigval_list,radii, R_min, R_max)
 
 
 
 # Oblique Manifold
-points=sample_stiefel(100,3,2)
-print(points)
-print(np.shape(points))
+points=sample_stiefel(1000,12,6)
+#print(points)
+#print(np.shape(points))
+points=np.reshape(points,(1000,72))
+dim_mat=np.shape(points)
+rng=random.randint(0,dim_mat[0])
+eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(points,rng,66)
+ep(eigval_list,radii, R_min, R_max)
 
 
 

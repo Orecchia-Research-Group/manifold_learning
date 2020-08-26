@@ -113,7 +113,7 @@ def sample_stiefel(numsamples,n,p,k=1):
         manifold=Stiefel(n,p,k=1)
 
         for i in tqdm(range(numsamples)):
-            points.append(np.reshape(manifold.rand(),(n*p)))
+            points.append(manifold.rand())
         points=np.stack(points)
         with open("data/stiefel__"+str(numsamples)+"_"+str(n)+"_"+str(p)+"_"+str(k)+".pkl", "wb") as f:
             pkl.dump(points, f)
@@ -134,7 +134,7 @@ def sample_oblique(numsamples,m,n):
         manifold=Oblique(m,n)
 
         for i in tqdm(range(numsamples)):
-            points.append(np.reshape(manifold.rand(),(m*n)))
+            points.append(manifold.rand())
         points=np.stack(points)
         with open("data/oblique__"+str(numsamples)+"_"+str(m)+"_"+str(n)+".pkl", "wb") as f:
             pkl.dump(points, f)

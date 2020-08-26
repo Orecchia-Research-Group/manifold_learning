@@ -148,7 +148,7 @@ class C_1_MLS_oracle:
 			return "Initial input x is too far from data for this value of delta. Only one value to compute."
 		try:
 			inv = np.linalg.inv(np.matmul(np.matmul(P_t,D),P))
-		except numpy.linalg.LinAlgError:
+		except np.linalg.LinAlgError:
 			return "Matrix is not invertible. Change input parameters."
 		
 
