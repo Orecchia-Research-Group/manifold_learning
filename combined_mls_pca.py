@@ -8,7 +8,10 @@ def mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
     """
     This function performs PCA and MLS at increasing radii values of an epsilon ball.
     """
-    
+    # Calculates step value k and delta for MLS
+    delta = 50*radint
+    k_step = np.floor(delta/radint)*radint
+
     dim_array = np.shape(cloud)  # saves the dimensions of the array
     eigval_list = []  # creates empty list to store eigenvalues
     top_eigvecs = []  # creates empyt list in order to store the egenvectors of the intrinsic dimension
@@ -40,7 +43,10 @@ def mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
 
     #Setting R_min to be huge number in order for loop not to cut out early
     R_min = 2**10
-    R_max = 0
+    R_max = 2**10
+
+    count = 0
+    len_arr = [0]*len(radii)
  
     for i in range(len(radii)):   
          
@@ -51,8 +57,7 @@ def mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
         dim_X = np.shape(X_mat)  # saves dimensions of matrix for points within the current radius
         shapes.append(dim_X)
 
-        # Second value to compare with mls condition
-        ball = len(X)
+        len_arr[i] = len(X)
         
         if i == 0:
             cov_X = np.cov(X_mat, rowvar=False)
@@ -82,32 +87,37 @@ def mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
         pairs_top = np.array([rad_list, eigval_top]) 
         pairs_k_1 = np.array([rad_list, eigval_k_1])
 
-
-        # Create instance of MLS class, otherwise add tuples
         if i == 0:
-            MLS_1 = C_1_MLS_oracle(pairs_top, 500, 5)
-            MLS_k_1 = C_1_MLS_oracle(pairs_k_1, 500, 5)
-        elif i == 1 or i == 2:
+            MLS_1 = C_1_MLS_oracle(pairs_top, delta, 3)
+            MLS_k_1 = C_1_MLS_oracle(pairs_k_1, delta, 3)
+            count += 1 
+        elif i <= np.floor(delta/radint):
             MLS_1.insert(pairs_top)
             MLS_k_1.insert(pairs_k_1)
+            count += 1 
         else:
             MLS_1.insert(pairs_top)
             MLS_k_1.insert(pairs_k_1)
-
+            ball = len_arr[i-count]
+           
             ### Start if statement for MLS here (within radii for loop)
-            if (abs(MLS_1.eval(radii[i])[1]) <= 0.5) and MLS_1.eval(radii[i])[1]<0 and min_found==1 and max_found == 0:
-                R_max = radii[i]
-                max_found = 1
+            if MLS_1.eval(radii[i] - k_step)[1]>0.01 and R_max != 2**10 and max_found == 0:
+                max_found == 1
                 if not(iter):
                     break
 
-            if (MLS_k_1.eval(radii[i])[1]<-0.01) and min_found == 0 and ball >= comp:
-                R_min = radii[i]
+            if (MLS_1.eval(radii[i] - k_step)[1]< 0 or np.isclose(0, MLS_1.eval(radii[i] - k_step)[1])) and min_found==1 and max_found ==0:
+                R_max = radii[i] - k_step
+
+
+            if (abs(MLS_k_1.eval(radii[i] - k_step)[1]) < 0.001 or MLS_k_1.eval(radii[i] - k_step)[1]<0) and min_found == 0 and ball >= comp:
+                R_min = radii[i] - k_step
                 min_found = 1
+
         
-    print(cloud)
-    print(eigval_list)
-    print(cov_X)
+    #print(cloud)
+    #print(eigval_list)
+    #print(cov_X)
     new_radii = radii[:len(eigval_list)]
 
     if len(eigval_list) == 0:

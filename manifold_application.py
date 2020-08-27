@@ -16,22 +16,22 @@ from pymanopt.manifolds import Sphere, Rotations, Stiefel, Oblique, Elliptope
 
 
 ## Recreate figure 1
-#hs=hypersphere(1000,10)
-#hs=np.stack(hs, axis=1)
+hs=hypersphere(1000,10)
+hs=np.stack(hs, axis=1)
 #print(hs)
 #print(np.shape(hs))
-#zeros_mat=np.zeros((1000,90))
+zeros_mat=np.zeros((1000,90))
 #print(np.shape(zeros_mat))
-#new_hs=np.append(hs,zeros_mat,axis=1)
+new_hs=np.append(hs,zeros_mat,axis=1)
 #print(new_hs)
 #print(np.shape(new_hs))
-#hs_noisy=new_hs+np.random.randn(1000,100)*.1
+hs_noisy=new_hs+np.random.randn(1000,100)*.1
 #print(hs_noisy)
-#dim_mat=np.shape(hs_noisy)
-#rng=random.randint(0,dim_mat[0])
-#center=hs_noisy[rng,:]
-#eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(hs_noisy,rng,9)
-#ep(eigval_list,radii, R_min, R_max)
+dim_mat=np.shape(hs_noisy)
+rng=random.randint(0,dim_mat[0])
+center=hs_noisy[rng,:]
+eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(hs_noisy,rng,9)
+ep(eigval_list,radii, R_min, R_max)
 
 
 
@@ -42,7 +42,7 @@ from pymanopt.manifolds import Sphere, Rotations, Stiefel, Oblique, Elliptope
 #cloud_mat=np.reshape(cloud,(1000,42))
 #dim_mat=np.shape(cloud_mat)
 #rng=random.randint(0,dim_mat[0])
-##center=cloud_mat[rng,:]
+#center=cloud_mat[rng,:]
 #eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(cloud_mat,rng,6)
 #ep(eigval_list,radii, R_min, R_max)
 
@@ -86,14 +86,14 @@ from pymanopt.manifolds import Sphere, Rotations, Stiefel, Oblique, Elliptope
 
 
 # Oblique Manifold
-points=sample_stiefel(1000,12,6)
+#points=sample_stiefel(1000,12,6)
 #print(points)
 #print(np.shape(points))
-points=np.reshape(points,(1000,72))
-dim_mat=np.shape(points)
-rng=random.randint(0,dim_mat[0])
-eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(points,rng,66)
-ep(eigval_list,radii, R_min, R_max)
+#points=np.reshape(points,(1000,72))
+#dim_mat=np.shape(points)
+#rng=random.randint(0,dim_mat[0])
+#eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(points,rng,66)
+#ep(eigval_list,radii, R_min, R_max)
 
 
 
