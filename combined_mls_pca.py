@@ -88,8 +88,8 @@ def mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
         pairs_k_1 = np.array([rad_list, eigval_k_1])
 
         if i == 0:
-            MLS_1 = C_1_MLS_oracle(pairs_top, delta, 3)
-            MLS_k_1 = C_1_MLS_oracle(pairs_k_1, delta, 3)
+            MLS_1 = C_1_MLS_oracle(pairs_top, delta, 2)
+            MLS_k_1 = C_1_MLS_oracle(pairs_k_1, delta, 2)
             count += 1 
         elif i <= np.floor(delta/radint):
             MLS_1.insert(pairs_top)
@@ -110,7 +110,7 @@ def mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
                 R_max = radii[i] - k_step
 
 
-            if (abs(MLS_k_1.eval(radii[i] - k_step)[1]) < 0.001 or MLS_k_1.eval(radii[i] - k_step)[1]<0) and min_found == 0 and ball >= comp:
+            if (abs(MLS_k_1.eval(radii[i] - k_step)[1]) < 0.1 or MLS_k_1.eval(radii[i] - k_step)[1]<0) and min_found == 0 and ball >= comp:
                 R_min = radii[i] - k_step
                 min_found = 1
 
