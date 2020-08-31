@@ -110,6 +110,8 @@ def eigen_plot(eigval_list,radii, R_min, R_max):
     for i in range(dim_eig_mat[1]):  # iterates through the columns (dimensions) of the eigenvalue matrix
         axes.plot(radii, eig_mat[:, i])  # plots eigenvalues (y-axis) against each radii value (x-axis)
     axes.axvspan(R_min, R_max, alpha=0.5, color = 'red')
+    st = "Manifold_radii" + str(np.random.randint(low=1, high = 1000)) + ".png"
+    plt.savefig(st)
     return (plt.show())
 
 

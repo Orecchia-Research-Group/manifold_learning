@@ -9,7 +9,7 @@ def mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
     This function performs PCA and MLS at increasing radii values of an epsilon ball.
     """
     # Calculates step value k and delta for MLS
-    delta = 50*radint
+    delta = 10*radint
     k_step = np.floor(delta/radint)*radint
 
     dim_array = np.shape(cloud)  # saves the dimensions of the array

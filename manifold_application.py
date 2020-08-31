@@ -38,24 +38,24 @@ ep(eigval_list,radii, R_min, R_max)
 
 
 # Grassmann point cloud output
-#cloud=sample_grassmann(7,6,1000)
-#cloud_mat=np.reshape(cloud,(1000,42))
-#dim_mat=np.shape(cloud_mat)
-#rng=random.randint(0,dim_mat[0])
-#center=cloud_mat[rng,:]
-#eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(cloud_mat,rng,6)
-#ep(eigval_list,radii, R_min, R_max)
+cloud=sample_grassmann(7,6,1000)
+cloud_mat=np.reshape(cloud,(1000,42))
+dim_mat=np.shape(cloud_mat)
+rng=random.randint(0,dim_mat[0])
+center=cloud_mat[rng,:]
+eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(cloud_mat,rng,6)
+ep(eigval_list,radii, R_min, R_max)
 
 
 
 
 
 # Swiss Roll Test
-#points, junk = sklearn.datasets.make_swiss_roll(n_samples=1000,noise=0.3)
-#dim_mat=np.shape(points)
-#rng=random.randint(0,dim_mat[0])
-#eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(points,rng,2)
-#ep(eigval_list,radii, R_min, R_max)
+points, junk = sklearn.datasets.make_swiss_roll(n_samples=1000,noise=0.3)
+dim_mat=np.shape(points)
+rng=random.randint(0,dim_mat[0])
+eigval_list,top_eigvecs,radii, R_min, R_max = mls_pca(points,rng,2)
+ep(eigval_list,radii, R_min, R_max)
 
 
 
