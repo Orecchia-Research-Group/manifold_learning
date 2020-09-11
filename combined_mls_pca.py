@@ -122,6 +122,6 @@ def mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
 
     if len(eigval_list) == 0:
         raise ValueError(str(eigval_cache) + '\n\n\n' + str(top_eigvecs) + "\n\n\n" + str(radii))
-    print(R_min)
-    print(R_max)
-    return[np.array(eigval_list),np.array(top_eigvecs),new_radii, R_min, R_max]
+#    print(R_min)
+#    print(R_max)
+    return[np.array(eigval_list),np.array(top_eigvecs),new_radii, R_min, R_max, X_mat]
