@@ -31,11 +31,4 @@ while (len(uncov_hash) != 0):
     points_hash=set(map(tuple,points))
     uncov_hash = uncov_hash - points_hash
     
-
-    #for i in points:
-        #for j in uncovered_list:
-            #boolean = points[i,:] == uncovered_list[j,:]
-            #if np.allclose(i,j):
-                #np.delete(uncovered_list,uncovered_list.index(j),0)
-
 print(lla)
