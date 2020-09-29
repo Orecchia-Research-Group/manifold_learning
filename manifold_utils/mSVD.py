@@ -134,4 +134,4 @@ def eps_projection(vectors,eigvecs,center,k):
         for j in range(k):
             projections_list.append(np.dot(newvecs[i,:k],eigvecs[j])*eigvecs[j])
         
-    return(np.sum(projections_list))
+    return(projections_list)
