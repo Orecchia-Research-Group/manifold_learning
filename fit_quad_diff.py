@@ -14,7 +14,7 @@ def manifold_regression(V,V_perp,points,center):
     lreg.fit(xi_squared,yi)
 
     return(lreg.coef_)
-    print xi_sqaured,yi
+    #print xi_sqaured,yi
 
     
     

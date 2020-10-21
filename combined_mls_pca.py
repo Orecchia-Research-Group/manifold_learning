@@ -15,6 +15,8 @@ def mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
     dim_array = np.shape(cloud)  # saves the dimensions of the array
     eigval_list = []  # creates empty list to store eigenvalues
     top_eigvecs = []  # creates empyt list in order to store the egenvectors of the intrinsic dimension
+    bottom_eigvecs = []
+
     if dist == None:
         dist_mat = np.zeros((dim_array[0],dim_array[0])) # creates an empty n x n matrix
     else:
@@ -64,17 +66,20 @@ def mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
             eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matrix
             eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
             top_eigvecs.append(eigvecs[0:k])
-            
+            bottom_eigvecs.append(eigvecs[k:])
+                
         elif shapes[i] != shapes[i-1]:
             cov_X = np.cov(X_mat, rowvar=False)
             eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matr$
             eigval_list.append(eigvals)  # appends the set of eigenvalues to the list created above
             top_eigvecs.append(eigvecs[0:k])
+            bottom_eigvecs.append(eigvecs[k:])
 
         else:
             eigval_list.append(eigval_list[-1])
             top_eigvecs.append(top_eigvecs[-1])
-            eigvals = eigval_list[-1]     
+            eigvals = eigval_list[-1]
+            bottom_eigvecs.append(eigvecs[k:])     
  
         # Set up the list of radii from the tuple (eigenvalues list is already saved as eigvals)
         rad_list = [radii[i]]
@@ -124,4 +129,4 @@ def mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
         raise ValueError(str(eigval_cache) + '\n\n\n' + str(top_eigvecs) + "\n\n\n" + str(radii))
 #    print(R_min)
 #    print(R_max)
-    return[np.array(eigval_list),np.array(top_eigvecs),new_radii, R_min, R_max, X_mat]
+    return[np.array(eigval_list),np.array(top_eigvecs),new_radii, R_min, R_max, X_mat, bottom_eigvecs]
