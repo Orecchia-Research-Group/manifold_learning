@@ -5,7 +5,7 @@ from manifold_utils.mSVD import eps_projection
 def manifold_regression(V,V_perp,points,center):
     #Set up yi and xi to be passed into linear regression function
     k=np.shape(points)[1]
-    xi=np.stack(eps_projection(points,eigvecs,center,k))  
+    xi=np.stack(eps_projection(points,V,center,k))  
     yi=np.stack(eps_projection(points,V_perp,center,k)) 
     xi_squared=np.sqaure(xi)
 
