@@ -21,8 +21,8 @@ cov_X = np.cov(table, rowvar=False)
 eigvals, eigvecs = np.linalg.eigh(cov_X)  # computes the eigenvalues and eigenvectors of the covariance matrix
 
 eigvecs=np.vstack(eigvecs)
-top_eig = eigvecs[:2,]
-bot_eig = eigvecs[-1,]
+top_eig = eigvecs[:,:2]
+bot_eig = eigvecs[:,-1]
 
 print(top_eig)
 print(np.shape(top_eig))
