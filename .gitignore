@@ -1,10 +1,11 @@
 __pycache__/*
 data/*
+atlas_utils/__pycache__/*
 data/__pycache__/*
 mls/__pycache__/*
 tests/__pycache__/*
-kyle/.ipynb_checkpoints/*
 manifold_utils/__pycache__/*
+kyle/.ipynb_checkpoints/*
 tests/.ipynb_checkpoints/*
 .ipynb_checkpoints/*
 *.png

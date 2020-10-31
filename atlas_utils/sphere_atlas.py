@@ -27,7 +27,7 @@ def unit_ball_to_positive_hemisphere(x, dim):
 	y = np.zeros(dim + 1)
 	for j in range(dim):
 		y[j] = x[j]
-	y[dim] = 1 - np.sum(x**2)
+	y[dim] = np.sqrt(1 - np.sum(x**2))
 	return y
 
 def unit_ball_to_negative_hemisphere(x, dim):
@@ -45,15 +45,15 @@ def permutation_matrix(dim):
 def parametrize_chart(x, P):
 	# For specific case of points in S^{n-1}
 	assert np.isclose(np.linalg.norm(x), 1)
-	ortho = np.array([x])
+	dim = x.shape[0]
+	ortho = np.array(x)
 	pre_para = []
 	for j in range(dim - 1):
 		if j == 0:
 			pre_para.append(P @ x)
 		else:
-			pre_para.append(P @ x[-1])
+			pre_para.append(P @ pre_para[-1])
 	para = np.stack(pre_para, axis=0)
 	# kappa is identical for all unit vectors in tangent plane
 	kappa = 1
-
-goober = lattice_in_unit_ball(2, 3)
+	return para, ortho
