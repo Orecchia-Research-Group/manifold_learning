@@ -1,15 +1,6 @@
 import itertools as it
 import numpy as np
 
-class coor_chart:
-	def __init__(self, name):
-		assert isinstance(name, str)
-		self.name = name
-
-class atlas_representation:
-	def __init__(self):
-		pass
-
 def lattice_in_unit_ball(dim, n_points_in_orthant):
 	assert isinstance(dim, int)
 	assert isinstance(n_points_in_orthant, int)
@@ -54,6 +45,25 @@ def parametrize_chart(x, P):
 		else:
 			pre_para.append(P @ pre_para[-1])
 	para = np.stack(pre_para, axis=0)
-	# kappa is identical for all unit vectors in tangent plane
-	kappa = 1
+
 	return para, ortho
+
+class coor_chart():
+	def __init__(self, root_point, P):
+		assert isinstance(root_point, tuple)
+		self.name = root_point
+		self.para, self.ortho = parametrize_chart(np.array(root_point), P)
+
+class atlas_representation:
+	def __init__(self, dim, n_points_in_orthant):
+		# Generate permutation matrix
+		self.P = permutation_matrix(dim)
+
+		# Generate centerpoints of coordinate charts
+		lattice = lattice_in_unit_ball(dim, n_points_in_orthant)
+		upper_hemisphere = set(unit_ball_to_upper_hemisphere(point, dim) for tuple(point) in lattice)
+		lower_hemisphere = set(unit_ball_to_lower_hemisphere(point, dim) for tuple(point) in lattice)
+		self.root_points = upper_hemisphere.union(lower_hemisphere)
+		self.charts = {}
+		for root_point in self.root_points:
+			self.charts[root_point] = coor_chart(root_point, self.P)
