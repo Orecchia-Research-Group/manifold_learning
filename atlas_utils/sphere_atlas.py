@@ -54,6 +54,9 @@ class coor_chart():
 		self.name = root_point
 		self.para, self.ortho = parametrize_chart(np.array(root_point), P)
 
+		# all principal curvatures are 1
+		self.kappa = 1.0
+
 class atlas_representation:
 	def __init__(self, dim, n_points_in_orthant):
 		# Generate permutation matrix
