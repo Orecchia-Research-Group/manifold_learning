@@ -30,17 +30,17 @@ def two_index_iterator(thresholds, candidates, key=None):
     candidates does not have to be sorted in increasing order, so long as a key argument
     is given which maps candidates to an increasning sequence
     """
+    # Create auxiliary key function
+    true_key = lambda x: x if not key else key(x)
     # initialize candidate indices
     cand_ind = 0
     for thresh in thresholds:
         new_candidates = []
-        if not key:
-            val = candidates[cand_ind]
-	else:
-            val = key(candidates[cand_ind])
-        while val <= thresh:
+        while true_key(candidates[cand_ind]) <= thresh:
             new_candidates.append(candidates[cand_ind])
             cand_ind += 1
+            if cand_ind == len(candidates):
+                break
         yield thresh, new_candidates
 
 ### Function for obtaining eigenvalues while iterating through radii
@@ -180,7 +180,7 @@ def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01):
 
     eigval_list = []
     eigvec_list = []
-    for rad, cands in two_index_iterator(radii, indices, key=lambda x: dist_vec[x])
+    for rad, cands in two_index_iterator(radii, indices, key=lambda x: dist_vec[x]):
         if len(cands) > 0:
             new_cands = np.stack([cloud[cand, :] for cand in cands], axis=0)
             try:
@@ -191,8 +191,8 @@ def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01):
             eigvals, eigvecs = np.linalg.eigh(cov_X)
             eigval_list.append(eigvals)
             eigvec_list.append(eigvecs)
-            else:
-                eigval_list.append(eigval_list[-1])
-                eigvec_list.append(eigvec_list[-1])
+        else:
+            eigval_list.append(eigval_list[-1])
+            eigvec_list.append(eigvec_list[-1])
 
     return radii, eigval_list, eigvec_list
