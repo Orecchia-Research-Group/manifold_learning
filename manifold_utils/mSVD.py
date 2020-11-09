@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import random
-from scipy.spatial import distance
 import matplotlib.pyplot as plt
 
 
@@ -184,7 +183,7 @@ def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01):
         if len(cands) > 0:
             new_cands = np.stack([cloud[cand, :] for cand in cands], axis=0)
             try:
-                points = np.stack(points, new_cands, axis=0)
+                points = np.vstack([points, new_cands])
             except NameError:
                 points = new_cands
             cov_X = np.cov(points, rowvar=False)
