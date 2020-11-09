@@ -21,6 +21,27 @@ def hypersphere(npoints, ndim):
                           axis=0)  # divides each vector by its norm, which turns each vector into a unit vector (length 1). Here we obtain samples from the unit sphere in the dimension we stated in the beginning of the function.
     return (vec)
 
+def two_index_iterator(thresholds, candidates, key=None):
+    """
+    Takes two iterables (sorted in increasing order) and returns the tuple (a, b)
+    at each iteration. a is the current value of thresholds, and b is a list of all
+    values between the previous threshhold and the current threshhold, inclusive
+
+    candidates does not have to be sorted in increasing order, so long as a key argument
+    is given which maps candidates to an increasning sequence
+    """
+    # initialize candidate indices
+    cand_ind = 0
+    for thresh in thresholds:
+        new_candidates = []
+        if not key:
+            val = candidates[cand_ind]
+	else:
+            val = key(candidates[cand_ind])
+        while val <= thresh:
+            new_candidates.append(candidates[cand_ind])
+            cand_ind += 1
+        yield thresh, new_candidates
 
 ### Function for obtaining eigenvalues while iterating through radii
 
@@ -35,7 +56,7 @@ def eigen_calc(cloud, center_ind, k, radint = .01):
         k (int): the intrinsic dimension of the data
 	    # radstart (int): the first radius value of the expanding sphere
         # radend (int): the final value (included) of the expanding spherical radius
-        radint (int): Default = .01; the interval (step size) at which the radius expands
+        radint (float): Default = .01; the interval (step size) at which the radius expands
     """
 
     dim_array = np.shape(cloud)  # saves the dimensions of the array
@@ -135,3 +156,43 @@ def eps_projection(vectors,eigvecs,center,k):
             projections_list.append(np.dot(newvecs[i,:k],eigvecs[j])*eigvecs[j])
         
     return(projections_list)
+
+def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01):
+    """
+    This function iterates through specidic radii values and performs PCA at the given radius. The PCA values (eigenvalues, eigenvectors) are then saved and returned in a multidimensional list.
+    Also, this function requires the numpy, random, and scipy packages for proper use.
+
+    Parameters:
+        cloud (arr): a multidimensional point cloud array that contains the coordinates of the points in the cloud
+        center_ind (int): the index of the desired point on which the sphere is centered
+	    # radstart (int): the first radius value of the expanding sphere
+        # radend (int): the final value (included) of the expanding spherical radius
+        radint (float): Default = .01; the interval (step size) at which the radius expands
+    """
+    N, d = cloud.shape # Get number N of points and dimension d of ambient space
+    assert dist_mat.shape == (N, N) # Assert agreement between cloud.shape and dist_mat.shape
+
+    dist_vec = dist_mat[center_ind, :]
+    sorted_vec = np.sort(dist_vec)
+    radii = [*np.arange(sorted_vec[5], sorted_vec[-1] + radint, radint)]
+    indices = list(range(N))
+    indices.sort(key=lambda x: dist_vec[x])
+
+    eigval_list = []
+    eigvec_list = []
+    for rad, cands in two_index_iterator(radii, indices, key=lambda x: dist_vec[x])
+        if len(cands) > 0:
+            new_cands = np.stack([cloud[cand, :] for cand in cands], axis=0)
+            try:
+                points = np.stack(points, new_cands, axis=0)
+            except NameError:
+                points = new_cands
+            cov_X = np.cov(points, rowvar=False)
+            eigvals, eigvecs = np.linalg.eigh(cov_X)
+            eigval_list.append(eigvals)
+            eigvec_list.append(eigvecs)
+            else:
+                eigval_list.append(eigval_list[-1])
+                eigvec_list.append(eigvec_list[-1])
+
+    return radii, eigval_list, eigvec_list
