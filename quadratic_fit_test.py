@@ -28,7 +28,8 @@ print(top_eig)
 print(np.shape(top_eig))
 print(bot_eig)
 
-coef = mr(top_eig,bot_eig,table,[0,0,0])
+coef = mr(top_eig,bot_eig,table,[0,0,1])
+print(coef)
 
 #print(coef)
 #print(table)
