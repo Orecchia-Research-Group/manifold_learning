@@ -101,7 +101,7 @@ def PatExt(fn):
     Patches = Patches-colMeans
     #compute D-norms for each vector and record the top 1000 D-norms
     Dns = Dnorm(Patches)
-    hC_Indices = np.argsort(Dns)[:1000]
+    hC_Indices = np.argsort(Dns)[-1000:]
     #Store the normalized and DCT-transformed high contrast patches
     hC_DCT_Patches = np.zeros((1000,8)) #7-dimensional sphere in R8
     for i in range(1000):
