@@ -1,6 +1,9 @@
 #Import Packages
 import numpy as np
 
+# Get handle on NoneType
+NoneType = type(None)
+
 #Import MLS
 from mls.moving_least_squares import weight, weight_scaled, dweight, dweight_scaled, ddweight, ddweight_scaled, C_1_MLS_oracle
 
@@ -17,15 +20,14 @@ def mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
     top_eigvecs = []  # creates empyt list in order to store the egenvectors of the intrinsic dimension
     bottom_eigvecs = []
 
-    if dist == None:
+    if isinstance(dist, NoneType):
         dist_mat = np.zeros((dim_array[0],dim_array[0])) # creates an empty n x n matrix
+        # Fill in empty matrix with distances from each point to each other
+        for i in range(dim_array[0]):
+            for j in range(dim_array[0]):
+                dist_mat[i,j] = np.linalg.norm(cloud[i,:]-cloud[j,:])
     else:
         dist_mat = dist
-
-    # Fill in empty matrix with distances from each point to each other
-    for i in range(dim_array[0]):
-        for j in range(dim_array[0]):
-            dist_mat[i,j] = np.linalg.norm(cloud[i,:]-cloud[j,:])
 
     # Select the distance vector to work with based on the center_ind
     dist_vec = dist_mat[center_ind,:].copy()
