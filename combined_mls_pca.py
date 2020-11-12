@@ -165,7 +165,6 @@ def rapid_mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
     indices.sort(key=lambda x: dist_vec[x]) # sorts indices (of original points) in order from smallest distance to largest
     radii = [*np.arange(sorted_vec[5], sorted_vec[-1] + radint, radint)]
     shapes = [] # creates empty list to store shapes of X
-    X = []
 
     #value to use for MLS condition
     comp = k*np.log(k)
@@ -225,17 +224,20 @@ def rapid_mls_pca(cloud, center_ind, k, radint = .01, iter=False, dist=None):
             MLS_k_1 = C_1_MLS_oracle(pairs_k_1, delta, 2)
 
         ### Start if statement for MLS here (within radii for loop)
-        if MLS_1.eval(radii[i] - k_step)[1]>0.01 and R_max != 2**10 and max_found == 0:
+#        if MLS_1.eval(radii[i] - k_step)[1]>0.01 and R_max != 2**10 and max_found == 0:
+        if MLS_1.eval(rad - k_step)[1]>0.01 and R_max != 2**10 and max_found == 0:
             max_found == 1
             if not(iter):
                 break
 
-        if (MLS_1.eval(radii[i] - k_step)[1]< 0 or np.isclose(0, MLS_1.eval(radii[i] - k_step)[1])) and min_found==1 and max_found ==0:
-            R_max = radii[i] - k_step
+#        if (MLS_1.eval(radii[i] - k_step)[1]< 0 or np.isclose(0, MLS_1.eval(radii[i] - k_step)[1])) and min_found==1 and max_found ==0:
+        if (MLS_1.eval(rad - k_step)[1]< 0 or np.isclose(0, MLS_1.eval(rad - k_step)[1])) and min_found==1 and max_found ==0:
+            R_max = rad - k_step
 
 
-        if (abs(MLS_k_1.eval(radii[i] - k_step)[1]) < 0.1 or MLS_k_1.eval(radii[i] - k_step)[1]<0) and min_found == 0 and ball >= comp:
-            R_min = radii[i] - k_step
+#        if (abs(MLS_k_1.eval(radii[i] - k_step)[1]) < 0.1 or MLS_k_1.eval(radii[i] - k_step)[1]<0) and min_found == 0 and ball >= comp:
+        if (abs(MLS_k_1.eval(rad - k_step)[1]) < 0.1 or MLS_k_1.eval(rad - k_step)[1]<0) and min_found == 0 and ball >= comp:
+            R_min = rad - k_step
             min_found = 1
 
     new_radii = radii[:len(eigval_list)]
