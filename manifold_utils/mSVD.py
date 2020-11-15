@@ -117,7 +117,7 @@ def eigen_plot(eigval_list,radii, R_min, R_max):
 
 ## Function for projecting epsilon-ball vectors onto a hyperplane
 
-def eps_projection(vectors,eigvecs,center,k):
+def eps_projection(vectors,eigvecs,center):
     """
     This function projects vectors within an epsilon ball onto a hyperplane defined be given eigenvectors.
 
@@ -125,13 +125,8 @@ def eps_projection(vectors,eigvecs,center,k):
         vectors (arr): The set of points (vectors) to be projected onto the hyperplane
         eigvecs (arr): The set of eigenvectors which create the hyperplane
         center (arr): The center of both the epsilon ball and the hyperplane
-        k (int): The intrinsic dimensions of the hyperplane
     """
     
     newvecs = vectors-center
-    projections_list = [] # creates an empty array as a projection
-    for i in range(np.shape(vectors)[0]):
-        for j in range(k):
-            projections_list.append(np.dot(newvecs[i,:k],eigvecs[j])*eigvecs[j])
-        
-    return(projections_list)
+    projection=np.dot(newvecs,eigvecs)
+    return(projection)
