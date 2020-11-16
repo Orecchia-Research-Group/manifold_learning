@@ -114,7 +114,7 @@ class C_1_MLS_oracle:
 		#Calculation of #(x), the size of the set I(x)
 		pound = I_values.shape[0]
 		if pound==0:
-			return "Initial input x is too far from data for this value of delta. No values to compute."
+			raise AssertionError("Initial input x is too far from data for this value of delta. No values to compute.")
 
 		# Calculation of matrix R(x)
 		R = np.empty(shape=(m + 1,1))
@@ -131,7 +131,7 @@ class C_1_MLS_oracle:
 			D[i,i] = weight_scaled(I_values[i]-x,delta)
 		is_all_zero = np.all((D == 0))
 		if is_all_zero:
-			return "Weight function returned all zeroes. Delta is too small."
+			raise AssertionError("Weight function returned all zeroes. Delta is too small."
 
 		# Slicing matrix P_complete
 		I_min = np.amin(I_indices)
@@ -145,12 +145,12 @@ class C_1_MLS_oracle:
 		# Calculating the product p*(x)
 		P_t = np.transpose(P)
 		if P.shape[0] == 1:
-			return "Initial input x is too far from data for this value of delta. Only one value to compute."
+			raise AssertionError("Initial input x is too far from data for this value of delta. Only one value to compute.")
 		try:
 			inv = np.linalg.inv(np.matmul(np.matmul(P_t,D),P))
 		except np.linalg.LinAlgError:
-			return "Matrix is not invertible. Change input parameters."
-            raise		
+			raise AssertionError("Matrix is not invertible. Change input parameters.")
+            		
 
 		
 		prod_1 = np.matmul(np.matmul(np.matmul(F,D), P), inv)
