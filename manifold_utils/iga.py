@@ -10,6 +10,8 @@ def chakraborty_express(X, Y, t):
 
 	For context, see between eqns 4 and 5 from Chakraborty et al.
 	2017
+
+	NOTE: It must be the case that X.T @ Y is invertible
 	"""
 	# Get terms A and B of the matrix product A@Y@B in the
 	# doctring
@@ -35,3 +37,18 @@ def chakraborty_express(X, Y, t):
 	Q, _ = np.linalg.qr(new_mat)
 
 	return Q
+
+def iga(stiefel_list):
+	"""
+	Performs IGA from Chakraborty et al. Each matrix in stiefel_list must
+	be a Stiefel matrix, and all Stiefel matrices must have same shape.
+
+	This method performs an online approximation of the Grassmann average
+	using iterated calls to chakraborty_express
+	"""
+	for j, Y in enumerate(stiefel_list):
+		if j == 0:
+			X = Y
+		else:
+			X = chakraborty_express(X, Y, (j+1)**(-1))
+	return X
