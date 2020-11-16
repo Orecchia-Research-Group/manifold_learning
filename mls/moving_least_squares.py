@@ -150,7 +150,7 @@ class C_1_MLS_oracle:
 			inv = np.linalg.inv(np.matmul(np.matmul(P_t,D),P))
 		except np.linalg.LinAlgError:
 			return "Matrix is not invertible. Change input parameters."
-		
+            raise		
 
 		
 		prod_1 = np.matmul(np.matmul(np.matmul(F,D), P), inv)
