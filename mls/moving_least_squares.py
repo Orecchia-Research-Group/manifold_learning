@@ -131,7 +131,7 @@ class C_1_MLS_oracle:
 			D[i,i] = weight_scaled(I_values[i]-x,delta)
 		is_all_zero = np.all((D == 0))
 		if is_all_zero:
-			raise AssertionError("Weight function returned all zeroes. Delta is too small."
+			raise AssertionError("Weight function returned all zeroes. Delta is too small.")
 
 		# Slicing matrix P_complete
 		I_min = np.amin(I_indices)
