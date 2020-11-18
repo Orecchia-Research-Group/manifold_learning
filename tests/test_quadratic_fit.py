@@ -19,5 +19,15 @@ def test_manifold_regression():
     coef = mr(V,V_perp,table,[0,0,0])
     test_coef =  np.array([[0.5, -3.]])
 
-    assert coef.all() == test_coef.all()
- 
+    assert np.all(np.isclose(coef, test_coef))
+
+    ## Again, but fitting two quadratics at once
+    w = 0.8*x**2+5.0*y**2
+
+    V = np.vstack([[1,0],[0,1],[0,0],[0,0]])
+    V_perp = np.vstack([[0,0],[0,0],[1,0],[0,1]])
+    table = np.stack((x, y, z, w), axis=1)
+    coef = mr(V, V_perp, table, [0,0,0,0])
+    test_coef =  np.array([[0.5, -3.], [0.8, 5.0]])
+
+    assert np.all(np.isclose(coef, test_coef))
