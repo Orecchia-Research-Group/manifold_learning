@@ -1,6 +1,6 @@
 from manifold_utils.mSVD import hypersphere
 #from combined_mls_pca import mls_pca 
-from fit_quad_diff import manifold_regression as mr
+from manifold_utils.fit_quad_diff import manifold_regression as mr
 import numpy as np
 import matplotlib.pyplot as plt
 
