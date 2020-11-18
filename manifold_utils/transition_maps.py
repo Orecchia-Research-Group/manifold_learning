@@ -86,3 +86,24 @@ def chart_to_ambient_space(x, p, V, V_perp, K):
 		return p + before_trans
 	except ValueError:
 		return np.stack([p] * before_trans.shape[1], axis=0).T + before_trans
+
+def ambient_space_to_chart(p, p_center, V):
+	"""
+	p: point in ambient space to be projected onto local
+		chart
+		(N-dimensional NumPy array); or
+		(Nxk NumPy array for some k)
+	p_center: center of coordinate chart in ambient space
+		(N-dimensional NumPy array)
+	V: the N x d Stiefel matrix whose columnspace is
+		parallel to the local linear approximation
+		used to learn the local quadratic
+		approximation at p
+		(Nxd NumPy array)
+	"""
+	try:
+		post_trans = p - p_center
+	except ValueError:
+		post_trans = p - np.stack([p_center] * p.shape[1], axis=0).T
+
+	return V.T @ post_trans

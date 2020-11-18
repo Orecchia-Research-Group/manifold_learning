@@ -67,3 +67,16 @@ def test_chart_to_ambient_space():
 	x = np.array([[1, 1], [-1, -1]]).T
 	amb_val = chart_to_ambient_space(x, p, V, V_perp, K)
 	assert np.all(np.isclose(amb_val, np.array([[2, 3, 4, 5], [0, 1, 4, 5]]).T))
+
+def test_ambient_space_to_chart():
+	"""
+	Perform the "inverse" of tests done in
+	test_chart_to_ambient_space
+	"""
+	p_center = np.array([1, 2, 3, 4])	# center point of approximation
+	# Columnspace of V is xy-plane
+	V = np.array([[1, 0], [0, 1], [0, 0], [0, 0]])
+
+	p = np.array([[2, 3, 4, 5], [0, 1, 4, 5]]).T
+	chart_val = ambient_space_to_chart(p, p_center, V)
+	assert np.all(np.isclose(chart_val, np.array([[1, 1], [-1, -1]]).T))
