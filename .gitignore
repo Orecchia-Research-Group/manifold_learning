@@ -8,3 +8,6 @@ manifold_utils/__pycache__/*
 tests/.ipynb_checkpoints/*
 .ipynb_checkpoints/*
 *.png
+Cell_list_ILC.csv
+Gene_list_ILC.csv
+sct_variable.h5ad
