@@ -190,3 +190,20 @@ def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01):
             eigvec_list.append(eigvec_list[-1])
 
     return radii, eigval_list, eigvec_list
+
+def eigen_calc_over_num_points(cloud, dist_mat, center_ind, intint=1)
+    N, d = cloud.shape # Get number N of points and dimension d of ambient space
+    assert dist_mat.shape == (N, N) # Assert agreement between cloud.shape and dist_mat.shape
+    assert isintance(intint, int)
+    assert intint > 0
+    assert N > 4
+
+    dist_vec = dist_mat[center_ind, :]
+    #sorted_vec = np.sort(dist_vec)
+    #radii = [*np.arange(sorted_vec[5], sorted_vec[-1] + radint, radint)]
+    indices = list(range(N))
+    indices.sort(key=lambda x: dist_vec[x])
+
+    for j in range(4, N):
+        pert_inds = indices[:j]
+        pert_points = None
