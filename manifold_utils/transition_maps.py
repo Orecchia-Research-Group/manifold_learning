@@ -61,3 +61,28 @@ def len_shortest_path(p_i, L_i, p_j, L_j):
 		return np.nan
 	else:
 		return np.linalg.norm(p_i - elbow) + np.linalg.norm(p_j - elbow)
+
+def chart_to_ambient_space(x, p, V, V_perp, K):
+	"""
+	x: representation of point in local coordinate chart
+		(d-dimensional NumPy array); or
+		(dxk NumPy aray for some k)
+	p: center of coordinate chart in ambient space
+		(N-dimensional NumPy array)
+	V: the N x d Stiefel matrix whose columnspace is
+		parallel to the local linear approximation
+		used to learn the local quadratic
+		approximation at p
+		(Nxd NumPy array)
+	V_perp: the N x (N-d) Stiefel matrix whose columnspace is
+		orthogonal to the local linear approximation
+		used to learn the local quadratic
+		approximation at p
+		(Nx(N-d) NumPy array)
+	"""
+	x_quad = 0.5 * np.square(x)
+	before_trans = V @ x + V_perp @ K @ x_quad
+	try:
+		return p + before_trans
+	except ValueError:
+		return np.stack([p] * before_trans.shape[1], axis=0).T + before_trans
