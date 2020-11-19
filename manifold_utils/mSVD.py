@@ -8,7 +8,6 @@ def hypersphere(npoints, ndim):
     """
     This function creates samples on a unit sphere in desired dimensions.
     It requires the numpy package.
-
     Parameters:
         npoints (int): the number of points to be sampled
         ndim (int): the number of dimensions in which the unit sphere will be sampled
@@ -25,7 +24,6 @@ def two_index_iterator(thresholds, candidates, key=None):
     Takes two iterables (sorted in increasing order) and returns the tuple (a, b)
     at each iteration. a is the current value of thresholds, and b is a list of all
     values between the previous threshhold and the current threshhold, inclusive
-
     candidates does not have to be sorted in increasing order, so long as a key argument
     is given which maps candidates to an increasning sequence
     """
@@ -48,12 +46,11 @@ def eigen_calc(cloud, center_ind, k, radint = .01):
     """
     This function iterates through specidic radii values and performs PCA at the given radius. The PCA values (eigenvalues, eigenvectors) are then saved and returned in a multidimensional list.
     Also, this function requires the numpy, random, and scipy packages for proper use.
-
     Parameters:
         cloud (arr): a multidimensional point cloud array that contains the coordinates of the points in the cloud
         center_ind (int): the index of the desired point on which the sphere is centered
         k (int): the intrinsic dimension of the data
-	    # radstart (int): the first radius value of the expanding sphere
+        # radstart (int): the first radius value of the expanding sphere
         # radend (int): the final value (included) of the expanding spherical radius
         radint (float): Default = .01; the interval (step size) at which the radius expands
     """
@@ -108,7 +105,88 @@ def eigen_calc(cloud, center_ind, k, radint = .01):
 
 ### Function for plotting eigenvalues obtained in the above function
 
-def eigen_plot(eigval_list, x_axis):
+def eigen_plot(eigval_list,radii, R_min, R_max):
+    """
+    This function plots the multidimensional eigenvalue list created from the eigen_calc function. X-axis corresponds to the radii value, while the y-axis corresponds to the eigenvalues. Each individual line represents a dimension.
+    Also, this function requires both the matplotlib and numpy packages.
+    Run the code: %matplotlib inline, when in jupyter notebook to display the plot in the notebook.
+    Parameters:
+        eigval_list (list): This is a multidimensional list containing eigenvalues at different radii values
+        radstart (int): the first radius value of the expanding sphere
+        radend (int): the final value (included) of the expanding spherical radius
+        radint (int): the interval (step size) at which the radius expands
+    """
+
+    # Plot the eigenvalues
+    #radii = np.arange(radstart, radend + radint, radint)  # creates an array of radii values to iterate through
+    eig_mat = np.stack(eigval_list, axis=0)  # stacks eigenvalue list into an array (dimensions of N x D)
+    dim_eig_mat = np.shape(eig_mat)  # saves dimensions of the eienvalue matrix for easy access
+    fig = plt.figure()  # creates a figure plot
+    axes = fig.add_subplot(111)  # adds x and y axes to the plot
+    for i in range(dim_eig_mat[1]):  # iterates through the columns (dimensions) of the eigenvalue matrix
+        axes.plot(radii, eig_mat[:, i])  # plots eigenvalues (y-axis) against each radii value (x-axis)
+    #axes.axvspan(R_min, R_max, alpha=0.5, color = 'red')
+    #st = "Manifold_radii" + str(np.random.randint(low=1, high = 1000)) + ".png"
+    #plt.savefig(st)
+    return (plt.show())
+
+
+## Function for projecting epsilon-ball vectors onto a hyperplane
+
+def eps_projection(vectors,eigvecs,center):
+    """
+    This function projects vectors within an epsilon ball onto a hyperplane defined be given eigenvectors.
+    Parameters:
+        vectors (arr): The set of points (vectors) to be projected onto the hyperplane
+        eigvecs (arr): The set of eigenvectors which create the hyperplane
+        center (arr): The center of both the epsilon ball and the hyperplane
+    """
+    
+    newvecs = vectors-center
+    projection=np.dot(newvecs,eigvecs)
+    return(projection)
+
+def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01):
+    """
+    This function iterates through specidic radii values and performs PCA at the given radius. The PCA values (eigenvalues, eigenvectors) are then saved and returned in a multidimensional list.
+    Also, this function requires the numpy, random, and scipy packages for proper use.
+    Parameters:
+        cloud (arr): a multidimensional point cloud array that contains the coordinates of the points in the cloud
+        center_ind (int): the index of the desired point on which the sphere is centered
+        # radstart (int): the first radius value of the expanding sphere
+        # radend (int): the final value (included) of the expanding spherical radius
+        radint (float): Default = .01; the interval (step size) at which the radius expands
+    """
+    N, d = cloud.shape # Get number N of points and dimension d of ambient space
+    assert dist_mat.shape == (N, N) # Assert agreement between cloud.shape and dist_mat.shape
+
+    dist_vec = dist_mat[center_ind, :]
+    sorted_vec = np.sort(dist_vec)
+    radii = [*np.arange(sorted_vec[5], sorted_vec[-1] + radint, radint)]
+    indices = list(range(N))
+    indices.sort(key=lambda x: dist_vec[x])
+
+    eigval_list = []
+    eigvec_list = []
+    for rad, cands in two_index_iterator(radii, indices, key=lambda x: dist_vec[x]):
+        if len(cands) > 0:
+            new_cands = np.stack([cloud[cand, :] for cand in cands], axis=0)
+            try:
+                points = np.vstack([points, new_cands])
+            except NameError:
+                points = new_cands
+            cov_X = np.cov(points, rowvar=False)
+            eigvals, eigvecs = np.linalg.eigh(cov_X)
+            eigval_list.append(eigvals)
+            eigvec_list.append(eigvecs)
+        else:
+            eigval_list.append(eigval_list[-1])
+            eigvec_list.append(eigvec_list[-1])
+
+    return radii, eigval_list, eigvec_list
+
+
+def eigen_plot_numPoints(eigval_list, numPoints):
     """
     This function plots the multidimensional eigenvalue list created from the eigen_calc function. X-axis corresponds to the radii value, while the y-axis corresponds to the eigenvalues. Each individual line represents a dimension.
     Also, this function requires both the matplotlib and numpy packages.
@@ -126,30 +204,13 @@ def eigen_plot(eigval_list, x_axis):
     fig = plt.figure()  # creates a figure plot
     axes = fig.add_subplot(111)  # adds x and y axes to the plot
     for i in range(dim_eig_mat[1]):  # iterates through the columns (dimensions) of the eigenvalue matrix
-        axes.plot(x_axis, eig_mat[:, i])  # plots eigenvalues (y-axis) against each radii value (x-axis)
+        axes.plot(numPoints, eig_mat[:, i])  # plots eigenvalues (y-axis) against each radii value (x-axis)
     #axes.axvspan(R_min, R_max, alpha=0.5, color = 'red')
     #st = "Manifold_radii" + str(np.random.randint(low=1, high = 1000)) + ".png"
     #plt.savefig(st)
     return (plt.show())
 
-
-## Function for projecting epsilon-ball vectors onto a hyperplane
-
-def eps_projection(vectors,eigvecs,center):
-    """
-    This function projects vectors within an epsilon ball onto a hyperplane defined be given eigenvectors.
-
-    Parameters:
-        vectors (arr): The set of points (vectors) to be projected onto the hyperplane
-        eigvecs (arr): The set of eigenvectors which create the hyperplane
-        center (arr): The center of both the epsilon ball and the hyperplane
-    """
-    
-    newvecs = vectors-center
-    projection=np.dot(newvecs,eigvecs)
-    return(projection)
-
-def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01):
+def eigen_calc_from_dist_mat_withNumPoints(cloud, dist_mat, center_ind, radint = .01):
     """
     This function iterates through specidic radii values and performs PCA at the given radius. The PCA values (eigenvalues, eigenvectors) are then saved and returned in a multidimensional list.
     Also, this function requires the numpy, random, and scipy packages for proper use.
@@ -157,7 +218,7 @@ def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01):
     Parameters:
         cloud (arr): a multidimensional point cloud array that contains the coordinates of the points in the cloud
         center_ind (int): the index of the desired point on which the sphere is centered
-	    # radstart (int): the first radius value of the expanding sphere
+        # radstart (int): the first radius value of the expanding sphere
         # radend (int): the final value (included) of the expanding spherical radius
         radint (float): Default = .01; the interval (step size) at which the radius expands
     """
