@@ -21,25 +21,23 @@ def iterated_projections(p_i, L_i, p_j, L_j):
 	trans_j = p_j - low_rank_j @ p_j
 
 	prev_marg = np.inf
-	p_prev = p_i
-	p = p_j
-	while not np.all(np.isclose(p_prev, p)):
+	p_curr_i = p_i
+	p_curr_j = p_j
+	while not np.all(np.isclose(p_curr_i, p_curr_j)):
 		#Projection corresponding to p_i, L_i
-		p_prev = p
-		p = low_rank_i @ p + trans_i
-		new_marg = np.linalg.norm(p - p_prev)
-		if new_marg >= prev_marg:
-			return np.nan
+		p_curr_i = low_rank_i @ p_curr_j + trans_i
+		new_marg = np.linalg.norm(p_curr_i - p_curr_j)
+		if np.all(np.isclose(new_marg, prev_marg)):
+			return p_curr_i, p_curr_j
 		prev_marg = new_marg
 
 		#Projection corresponding to p_j, L_j
-		p_prev = p
-		p = low_rank_j @ p + trans_j
-		new_marg = np.linalg.norm(p - p_prev)
-		if new_marg >= prev_marg:
-			return np.nan
+		p_curr_j = low_rank_j @ p_curr_i + trans_j
+		new_marg = np.linalg.norm(p_curr_i - p_curr_j)
+		if np.all(np.isclose(new_marg, prev_marg)):
+			return p_curr_i, p_curr_j
 		prev_marg = new_marg
-	return p
+	return p_curr_i, p_curr_j
 
 def len_shortest_path(p_i, L_i, p_j, L_j):
 	"""
@@ -56,11 +54,8 @@ def len_shortest_path(p_i, L_i, p_j, L_j):
 		eigenvectors for the local linear approximation
 		at p_j
 	"""
-	elbow = iterated_projections(p_i, L_i, p_j, L_j)
-	if np.any(np.isnan(elbow)):
-		return np.nan
-	else:
-		return np.linalg.norm(p_i - elbow) + np.linalg.norm(p_j - elbow)
+	end_i, end_j = iterated_projections(p_i, L_i, p_j, L_j)
+	return np.linalg.norm(p_i - end_i) + np.linalg.norm(end_i - end_j) + np.linalg.norm(end_j - p_j)
 
 def chart_to_ambient_space(x, p, V, V_perp, K):
 	"""
