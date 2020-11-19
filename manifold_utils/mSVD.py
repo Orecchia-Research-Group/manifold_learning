@@ -108,7 +108,7 @@ def eigen_calc(cloud, center_ind, k, radint = .01):
 
 ### Function for plotting eigenvalues obtained in the above function
 
-def eigen_plot(eigval_list,radii, R_min, R_max):
+def eigen_plot(eigval_list, x_axis):
     """
     This function plots the multidimensional eigenvalue list created from the eigen_calc function. X-axis corresponds to the radii value, while the y-axis corresponds to the eigenvalues. Each individual line represents a dimension.
     Also, this function requires both the matplotlib and numpy packages.
@@ -116,9 +116,7 @@ def eigen_plot(eigval_list,radii, R_min, R_max):
 
     Parameters:
         eigval_list (list): This is a multidimensional list containing eigenvalues at different radii values
-    	radstart (int): the first radius value of the expanding sphere
-        radend (int): the final value (included) of the expanding spherical radius
-        radint (int): the interval (step size) at which the radius expands
+        x_axis. Either radii or number of points included
     """
 
     # Plot the eigenvalues
@@ -128,10 +126,10 @@ def eigen_plot(eigval_list,radii, R_min, R_max):
     fig = plt.figure()  # creates a figure plot
     axes = fig.add_subplot(111)  # adds x and y axes to the plot
     for i in range(dim_eig_mat[1]):  # iterates through the columns (dimensions) of the eigenvalue matrix
-        axes.plot(radii, eig_mat[:, i])  # plots eigenvalues (y-axis) against each radii value (x-axis)
-    axes.axvspan(R_min, R_max, alpha=0.5, color = 'red')
-    st = "Manifold_radii" + str(np.random.randint(low=1, high = 1000)) + ".png"
-    plt.savefig(st)
+        axes.plot(x_axis, eig_mat[:, i])  # plots eigenvalues (y-axis) against each radii value (x-axis)
+    #axes.axvspan(R_min, R_max, alpha=0.5, color = 'red')
+    #st = "Manifold_radii" + str(np.random.randint(low=1, high = 1000)) + ".png"
+    #plt.savefig(st)
     return (plt.show())
 
 
@@ -174,6 +172,7 @@ def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01):
 
     eigval_list = []
     eigvec_list = []
+    numPoints_list = [] #track the number of points 
     for rad, cands in two_index_iterator(radii, indices, key=lambda x: dist_vec[x]):
         if len(cands) > 0:
             new_cands = np.stack([cloud[cand, :] for cand in cands], axis=0)
@@ -185,8 +184,10 @@ def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01):
             eigvals, eigvecs = np.linalg.eigh(cov_X)
             eigval_list.append(eigvals)
             eigvec_list.append(eigvecs)
+            numPoints_list.append(len(points))
         else:
             eigval_list.append(eigval_list[-1])
             eigvec_list.append(eigvec_list[-1])
+            numPoints_list.append(numPoints_list[-1])
 
-    return radii, eigval_list, eigvec_list
+    return radii, numPoints_list, eigval_list, eigvec_list
