@@ -3,6 +3,7 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 from scipy.sparse.linalg import svds
+import scipy
 
 def hypersphere(npoints, ndim):
     """
@@ -269,20 +270,16 @@ def eigen_calc_from_dist_mat_withNumPoints(cloud, dist_mat, center_ind, Rstart, 
 
 
 
-def Sparse_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, Rstart, Rend, radint=.01, k=20):
+def Sparse_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, Rstart, Rend, radint=.01, k=10):
     """
-    BUGGED
-    BUGGED
-    BuGGED
-
     This function iterates through specidic radii values and performs PCA at the given radius. The PCA values (eigenvalues, eigenvectors) are then saved and returned in a multidimensional list.
     Also, this function requires the numpy, random, and scipy packages for proper use.
 
     Parameters:
         cloud (arr): a multidimensional point cloud array that contains the coordinates of the points in the cloud
         center_ind (int): the index of the desired point on which the sphere is centered
-        Rstart (int): the first radius value of the expanding sphere
-        Rdend (int): the final value (included) of the expanding spherical radius
+        radstart (int): the first radius value of the expanding sphere
+        radend (int): the final value (included) of the expanding spherical radius
         radint (float): Default = .01; the interval (step size) at which the radius expands
     """
     N, d = cloud.shape # Get number N of points and dimension d of ambient space
@@ -312,10 +309,10 @@ def Sparse_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, Rstart, Rend, r
                 #get sample size
                 n = points.shape[0]
                 #center the data
-                points = scipy.sparse.csr_matrix(points)
-                points = points-scipy.sparse.csr_matrix.mean(points, axis=0)
+                sPoints = scipy.sparse.csr_matrix(points)
+                cPoints = sPoints - sPoints.mean(axis=0)
                 #svd for the top k
-                u, s, vt = svds(points, k)
+                u, s, vt = svds(cPoints, k)
                 eigvals = np.square(s)/(n-1)
                 radius_list.append(rad)
                 eigval_list.append(np.square(s)/(n-1))
@@ -331,5 +328,4 @@ def Sparse_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, Rstart, Rend, r
                 eigvec_list.append(eigvec_list[-1])
                 numPoints_list.append(numPoints_list[-1])
                 radius_list.append(rad)
-
     return radius_list, numPoints_list, eigval_list, eigvec_list
