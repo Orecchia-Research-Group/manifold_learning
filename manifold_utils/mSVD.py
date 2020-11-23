@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 import matplotlib.pyplot as plt
-
+from scipy.sparse.linalg import svds
 
 def hypersphere(npoints, ndim):
     """
@@ -186,7 +186,7 @@ def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01):
     return radii, eigval_list, eigvec_list
 
 
-def eigen_plot_numPoints(eigval_list, numPoints):
+def eigen_plot_numPoints(eigval_list, xaxis, xtype, cid):
     """
     This function plots the multidimensional eigenvalue list created from the eigen_calc function. X-axis corresponds to the radii value, while the y-axis corresponds to the eigenvalues. Each individual line represents a dimension.
     Also, this function requires both the matplotlib and numpy packages.
@@ -204,13 +204,15 @@ def eigen_plot_numPoints(eigval_list, numPoints):
     fig = plt.figure()  # creates a figure plot
     axes = fig.add_subplot(111)  # adds x and y axes to the plot
     for i in range(dim_eig_mat[1]):  # iterates through the columns (dimensions) of the eigenvalue matrix
-        axes.plot(numPoints, eig_mat[:, i])  # plots eigenvalues (y-axis) against each radii value (x-axis)
+        axes.plot(xaxis, eig_mat[:, i])  # plots eigenvalues (y-axis) against each radii value (x-axis)
     #axes.axvspan(R_min, R_max, alpha=0.5, color = 'red')
-    #st = "Manifold_radii" + str(np.random.randint(low=1, high = 1000)) + ".png"
-    #plt.savefig(st)
+    st = xtype + 'cid=' + str(cid) + ".jpg"
+    plt.xlabel(xtype, fontsize=14)
+    plt.ylabel('Eigenvalues')
+    plt.savefig(st, dpi=400)
     return (plt.show())
 
-def eigen_calc_from_dist_mat_withNumPoints(cloud, dist_mat, center_ind, radint = .01):
+def eigen_calc_from_dist_mat_withNumPoints(cloud, dist_mat, center_ind, Rstart, Rend, radint = .01):
     """
     This function iterates through specidic radii values and performs PCA at the given radius. The PCA values (eigenvalues, eigenvectors) are then saved and returned in a multidimensional list.
     Also, this function requires the numpy, random, and scipy packages for proper use.
@@ -230,7 +232,68 @@ def eigen_calc_from_dist_mat_withNumPoints(cloud, dist_mat, center_ind, radint =
     radii = [*np.arange(sorted_vec[5], sorted_vec[-1] + radint, radint)]
     indices = list(range(N))
     indices.sort(key=lambda x: dist_vec[x])
+    
+    radius_list = []
+    eigval_list = []
+    eigvec_list = []
+    numPoints_list = [] #track the number of points 
+    for rad, cands in two_index_iterator(radii, indices, key=lambda x: dist_vec[x]):  
+        if len(cands) > 0:
+            new_cands = np.stack([cloud[cand, :] for cand in cands], axis=0)
+            try:
+                points = np.vstack([points, new_cands])
+            except NameError:
+                points = new_cands
+            if rad < Rstart:
+                continue;
+            elif rad > Rend:
+                break;
+            else:
+                cov_X = np.cov(points, rowvar=False)
+                eigvals, eigvecs = np.linalg.eigh(cov_X)
+                eigval_list.append(eigvals)
+                eigvec_list.append(eigvecs)
+                numPoints_list.append(len(points))
+                radius_list.append(rad)
+        else:
+            if rad < Rstart:
+                continue;
+            elif rad > Rend:
+                break;
+            else:
+                eigval_list.append(eigval_list[-1])
+                eigvec_list.append(eigvec_list[-1])
+                numPoints_list.append(numPoints_list[-1])
+                radius_list.append(rad)
+    return radius_list, numPoints_list, eigval_list, eigvec_list
 
+
+
+def Sparse_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, Rstart, Rend, radint=.01, k=20):
+    """
+    BUGGED
+    BUGGED
+    BuGGED
+
+    This function iterates through specidic radii values and performs PCA at the given radius. The PCA values (eigenvalues, eigenvectors) are then saved and returned in a multidimensional list.
+    Also, this function requires the numpy, random, and scipy packages for proper use.
+
+    Parameters:
+        cloud (arr): a multidimensional point cloud array that contains the coordinates of the points in the cloud
+        center_ind (int): the index of the desired point on which the sphere is centered
+        Rstart (int): the first radius value of the expanding sphere
+        Rdend (int): the final value (included) of the expanding spherical radius
+        radint (float): Default = .01; the interval (step size) at which the radius expands
+    """
+    N, d = cloud.shape # Get number N of points and dimension d of ambient space
+    assert dist_mat.shape == (N, N) # Assert agreement between cloud.shape and dist_mat.shape
+
+    dist_vec = dist_mat[center_ind, :]
+    sorted_vec = np.sort(dist_vec)
+    radii = [*np.arange(sorted_vec[5], sorted_vec[-1] + radint, radint)]
+    indices = list(range(N))
+    indices.sort(key=lambda x: dist_vec[x])
+    radius_list = []
     eigval_list = []
     eigvec_list = []
     numPoints_list = [] #track the number of points 
@@ -241,14 +304,32 @@ def eigen_calc_from_dist_mat_withNumPoints(cloud, dist_mat, center_ind, radint =
                 points = np.vstack([points, new_cands])
             except NameError:
                 points = new_cands
-            cov_X = np.cov(points, rowvar=False)
-            eigvals, eigvecs = np.linalg.eigh(cov_X)
-            eigval_list.append(eigvals)
-            eigvec_list.append(eigvecs)
-            numPoints_list.append(len(points))
+            if rad < Rstart:
+                continue;
+            elif rad > Rend:
+                break;
+            else:
+                #get sample size
+                n = points.shape[0]
+                #center the data
+                points = scipy.sparse.csr_matrix(points)
+                points = points-scipy.sparse.csr_matrix.mean(points, axis=0)
+                #svd for the top k
+                u, s, vt = svds(points, k)
+                eigvals = np.square(s)/(n-1)
+                radius_list.append(rad)
+                eigval_list.append(np.square(s)/(n-1))
+                eigvec_list.append(vt)
+                numPoints_list.append(n)
         else:
-            eigval_list.append(eigval_list[-1])
-            eigvec_list.append(eigvec_list[-1])
-            numPoints_list.append(numPoints_list[-1])
+            if rad < Rstart:
+                continue;
+            elif rad > Rend:
+                break;
+            else:
+                eigval_list.append(eigval_list[-1])
+                eigvec_list.append(eigvec_list[-1])
+                numPoints_list.append(numPoints_list[-1])
+                radius_list.append(rad)
 
-    return radii, numPoints_list, eigval_list, eigvec_list
+    return radius_list, numPoints_list, eigval_list, eigvec_list

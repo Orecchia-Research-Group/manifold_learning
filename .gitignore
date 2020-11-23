@@ -11,3 +11,6 @@ tests/.ipynb_checkpoints/*
 *.csv
 *.h5ad
 +
+*.npz
+*.npy
+ILC analysis.ipynb
