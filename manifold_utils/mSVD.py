@@ -2,7 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 import matplotlib.pyplot as plt
-from manifold_utils.power_iteration import power_iteration
+from tqdm import tqdm
+from manifold_utils.power_iteration import iterated_power_method
 
 def hypersphere(npoints, ndim):
     """
@@ -281,7 +282,7 @@ def rapid_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01, k=
 
     eigval_list = []
     eigvec_list = []
-    for rad, cands in two_index_iterator(radii, indices, key=lambda x: dist_vec[x]):
+    for rad, cands in tqdm(two_index_iterator(radii, indices, key=lambda x: dist_vec[x])):
         if len(cands) > 0:
             new_cands = np.stack([cloud[cand, :] for cand in cands], axis=0)
             try:
@@ -289,7 +290,7 @@ def rapid_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01, k=
             except NameError:
                 points = new_cands
             cov_X = np.cov(points, rowvar=False)
-            eigvals, eigvecs = power_iteration(cov_X, k=k, norm_diff=1e-6)
+            eigvals, eigvecs = iterated_power_method(cov_X, k=k, norm_diff=1e-6)
             eigval_list.append(eigvals)
             eigvec_list.append(eigvecs)
         else:
