@@ -2,8 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 import matplotlib.pyplot as plt
-from scipy.sparse.linalg import svds
-import scipy
+from manifold_utils.power_iteration import power_iteration
 
 def hypersphere(npoints, ndim):
     """
@@ -49,10 +48,9 @@ def eigen_calc(cloud, center_ind, k, radint = .01):
     Also, this function requires the numpy, random, and scipy packages for proper use.
     Parameters:
         cloud (arr): a multidimensional point cloud array that contains the coordinates of the points in the cloud
+	dist_mat (arr): The entry at indices i,j is the Euclidean distance between points i and j
         center_ind (int): the index of the desired point on which the sphere is centered
         k (int): the intrinsic dimension of the data
-        # radstart (int): the first radius value of the expanding sphere
-        # radend (int): the final value (included) of the expanding spherical radius
         radint (float): Default = .01; the interval (step size) at which the radius expands
     """
 
@@ -82,7 +80,6 @@ def eigen_calc(cloud, center_ind, k, radint = .01):
         X_mat = np.vstack(X)  # creates a 'matrix' by vertically stacking the elements of the list
         dim_X = np.shape(X_mat)  # saves dimensions of matrix for points within the current radius
         shapes.append(dim_X)
-        
 
         # Create the covariance matrix and save eigenvalues for each set X
         if radii.index(i) == 0:
@@ -113,8 +110,6 @@ def eigen_plot(eigval_list,radii, R_min, R_max):
     Run the code: %matplotlib inline, when in jupyter notebook to display the plot in the notebook.
     Parameters:
         eigval_list (list): This is a multidimensional list containing eigenvalues at different radii values
-        radstart (int): the first radius value of the expanding sphere
-        radend (int): the final value (included) of the expanding spherical radius
         radint (int): the interval (step size) at which the radius expands
     """
 
@@ -153,9 +148,8 @@ def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01):
     Also, this function requires the numpy, random, and scipy packages for proper use.
     Parameters:
         cloud (arr): a multidimensional point cloud array that contains the coordinates of the points in the cloud
+	dist_mat (arr): The entry at indices i,j is the Euclidean distance between points i and j
         center_ind (int): the index of the desired point on which the sphere is centered
-        # radstart (int): the first radius value of the expanding sphere
-        # radend (int): the final value (included) of the expanding spherical radius
         radint (float): Default = .01; the interval (step size) at which the radius expands
     """
     N, d = cloud.shape # Get number N of points and dimension d of ambient space
@@ -185,7 +179,6 @@ def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01):
             eigvec_list.append(eigvec_list[-1])
 
     return radii, eigval_list, eigvec_list
-
 
 def eigen_plot_numPoints(eigval_list, xaxis, xtype, cid):
     """
@@ -220,9 +213,8 @@ def eigen_calc_from_dist_mat_withNumPoints(cloud, dist_mat, center_ind, Rstart, 
 
     Parameters:
         cloud (arr): a multidimensional point cloud array that contains the coordinates of the points in the cloud
+	dist_mat (arr): The entry at indices i,j is the Euclidean distance between points i and j
         center_ind (int): the index of the desired point on which the sphere is centered
-        # radstart (int): the first radius value of the expanding sphere
-        # radend (int): the final value (included) of the expanding spherical radius
         radint (float): Default = .01; the interval (step size) at which the radius expands
     """
     N, d = cloud.shape # Get number N of points and dimension d of ambient space
@@ -268,18 +260,14 @@ def eigen_calc_from_dist_mat_withNumPoints(cloud, dist_mat, center_ind, Rstart, 
                 radius_list.append(rad)
     return radius_list, numPoints_list, eigval_list, eigvec_list
 
-
-
-def Sparse_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, Rstart, Rend, radint=.01, k=10):
+def rapid_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01, k=10, norm_diff=1e-6):
     """
     This function iterates through specidic radii values and performs PCA at the given radius. The PCA values (eigenvalues, eigenvectors) are then saved and returned in a multidimensional list.
-    Also, this function requires the numpy, random, and scipy packages for proper use.
-
+    Also, this function requires the numpy and random packages for proper use.
     Parameters:
         cloud (arr): a multidimensional point cloud array that contains the coordinates of the points in the cloud
+	dist_mat (arr): The entry at indices i,j is the Euclidean distance between points i and j
         center_ind (int): the index of the desired point on which the sphere is centered
-        radstart (int): the first radius value of the expanding sphere
-        radend (int): the final value (included) of the expanding spherical radius
         radint (float): Default = .01; the interval (step size) at which the radius expands
     """
     N, d = cloud.shape # Get number N of points and dimension d of ambient space
@@ -290,10 +278,9 @@ def Sparse_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, Rstart, Rend, r
     radii = [*np.arange(sorted_vec[5], sorted_vec[-1] + radint, radint)]
     indices = list(range(N))
     indices.sort(key=lambda x: dist_vec[x])
-    radius_list = []
+
     eigval_list = []
     eigvec_list = []
-    numPoints_list = [] #track the number of points 
     for rad, cands in two_index_iterator(radii, indices, key=lambda x: dist_vec[x]):
         if len(cands) > 0:
             new_cands = np.stack([cloud[cand, :] for cand in cands], axis=0)
@@ -301,31 +288,12 @@ def Sparse_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, Rstart, Rend, r
                 points = np.vstack([points, new_cands])
             except NameError:
                 points = new_cands
-            if rad < Rstart:
-                continue;
-            elif rad > Rend:
-                break;
-            else:
-                #get sample size
-                n = points.shape[0]
-                #center the data
-                sPoints = scipy.sparse.csr_matrix(points)
-                cPoints = sPoints - sPoints.mean(axis=0)
-                #svd for the top k
-                u, s, vt = svds(cPoints, k)
-                eigvals = np.square(s)/(n-1)
-                radius_list.append(rad)
-                eigval_list.append(np.square(s)/(n-1))
-                eigvec_list.append(vt)
-                numPoints_list.append(n)
+            cov_X = np.cov(points, rowvar=False)
+            eigvals, eigvecs = power_iteration(cov_X, k=k, norm_diff=1e-6)
+            eigval_list.append(eigvals)
+            eigvec_list.append(eigvecs)
         else:
-            if rad < Rstart:
-                continue;
-            elif rad > Rend:
-                break;
-            else:
-                eigval_list.append(eigval_list[-1])
-                eigvec_list.append(eigvec_list[-1])
-                numPoints_list.append(numPoints_list[-1])
-                radius_list.append(rad)
-    return radius_list, numPoints_list, eigval_list, eigvec_list
+            eigval_list.append(eigval_list[-1])
+            eigvec_list.append(eigvec_list[-1])
+
+    return radii, eigval_list, eigvec_list
