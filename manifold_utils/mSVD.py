@@ -3,6 +3,7 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 from scipy.sparse.linalg import svds
+from scipy.sparse import vstack
 import scipy
 from tqdm import tqdm
 from manifold_utils.power_iteration import iterated_power_method
@@ -36,11 +37,14 @@ def two_index_iterator(thresholds, candidates, key=None):
     cand_ind = 0
     for thresh in thresholds:
         new_candidates = []
-        while true_key(candidates[cand_ind]) <= thresh:
-            new_candidates.append(candidates[cand_ind])
-            cand_ind += 1
-            if cand_ind == len(candidates):
-                break
+        try:
+            while true_key(candidates[cand_ind]) <= thresh:
+                new_candidates.append(candidates[cand_ind])
+                cand_ind += 1
+                if cand_ind == len(candidates):
+                    break
+        except IndexError:
+            pass
         yield thresh, new_candidates
 
 ### Function for obtaining eigenvalues while iterating through radii
@@ -318,41 +322,34 @@ def Sparse_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, Rstart, Rend, r
 
     dist_vec = dist_mat[center_ind, :]
     sorted_vec = np.sort(dist_vec)
-    radii = [*np.arange(sorted_vec[5], sorted_vec[-1] + radint, radint)]
+    radii = np.arange(Rstart, Rend + radint, radint)
     indices = list(range(N))
     indices.sort(key=lambda x: dist_vec[x])
     radius_list = []
     eigval_list = []
     eigvec_list = []
     numPoints_list = [] #track the number of points 
-    for rad, cands in two_index_iterator(radii, indices, key=lambda x: dist_vec[x]):
+    for rad, cands in tqdm(two_index_iterator(radii, indices, key=lambda x: dist_vec[x])):
         if len(cands) > 0:
-            new_cands = np.stack([cloud[cand, :] for cand in cands], axis=0)
+            new_cands = vstack([cloud[cand, :] for cand in cands])
             try:
-                points = np.vstack([points, new_cands])
+                points = vstack([points, new_cands])
             except NameError:
                 points = new_cands
-            if rad < Rstart:
-                continue;
-            elif rad > Rend:
+            if rad > Rend:
                 break;
             else:
-                #get sample size
+                # Get sample size
                 n = points.shape[0]
-                #center the data
-                sPoints = scipy.sparse.csr_matrix(points)
-                cPoints = sPoints - sPoints.mean(axis=0)
                 #svd for the top k
-                u, s, vt = svds(cPoints, k)
+                u, s, vt = svds(points, k)
                 eigvals = np.square(s)/(n-1)
                 radius_list.append(rad)
                 eigval_list.append(np.square(s)/(n-1))
                 eigvec_list.append(vt)
                 numPoints_list.append(n)
         else:
-            if rad < Rstart:
-                continue;
-            elif rad > Rend:
+            if rad > Rend:
                 break;
             else:
                 eigval_list.append(eigval_list[-1])
