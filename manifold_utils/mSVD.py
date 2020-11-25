@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from scipy.sparse.linalg import svds
 from scipy.sparse import vstack
 import scipy
-from tqdm import tqdm
 from manifold_utils.power_iteration import iterated_power_method
 
 def hypersphere(npoints, ndim):
@@ -288,7 +287,7 @@ def rapid_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01, k=
 
     eigval_list = []
     eigvec_list = []
-    for rad, cands in tqdm(two_index_iterator(radii, indices, key=lambda x: dist_vec[x])):
+    for rad, cands in two_index_iterator(radii, indices, key=lambda x: dist_vec[x]):
         if len(cands) > 0:
             new_cands = np.stack([cloud[cand, :] for cand in cands], axis=0)
             try:
@@ -305,7 +304,7 @@ def rapid_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01, k=
 
     return radii, eigval_list, eigvec_list
 
-def Sparse_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, Rstart, Rend, radint=.01, k=10):
+def Sparse_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, Rend, radint=.01, k=10):
     """
     This function iterates through specidic radii values and performs PCA at the given radius. The PCA values (eigenvalues, eigenvectors) are then saved and returned in a multidimensional list.
     Also, this function requires the numpy, random, and scipy packages for proper use.
@@ -322,14 +321,14 @@ def Sparse_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, Rstart, Rend, r
 
     dist_vec = dist_mat[center_ind, :]
     sorted_vec = np.sort(dist_vec)
-    radii = np.arange(Rstart, Rend + radint, radint)
+    radii = np.arange(sorted_vec[k], Rend + radint, radint)
     indices = list(range(N))
     indices.sort(key=lambda x: dist_vec[x])
     radius_list = []
     eigval_list = []
     eigvec_list = []
     numPoints_list = [] #track the number of points 
-    for rad, cands in tqdm(two_index_iterator(radii, indices, key=lambda x: dist_vec[x])):
+    for rad, cands in two_index_iterator(radii, indices, key=lambda x: dist_vec[x]):
         if len(cands) > 0:
             new_cands = vstack([cloud[cand, :] for cand in cands])
             try:
