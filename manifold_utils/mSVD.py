@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random
 import matplotlib.pyplot as plt
-from scipy.sparse.linalg import svds
+from scipy.sparse.linalg import svds, LinearOperator
 from scipy.sparse import vstack
 import scipy
 from manifold_utils.power_iteration import iterated_power_method
@@ -342,6 +342,74 @@ def Sparse_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, Rend, radint=.0
                 n = points.shape[0]
                 #svd for the top k
                 u, s, vt = svds(points, k)
+                eigvals = np.square(s)/(n-1)
+                radius_list.append(rad)
+                eigval_list.append(np.square(s)/(n-1))
+                eigvec_list.append(vt)
+                numPoints_list.append(n)
+        else:
+            if rad > Rend:
+                break;
+            else:
+                eigval_list.append(eigval_list[-1])
+                eigvec_list.append(eigvec_list[-1])
+                numPoints_list.append(numPoints_list[-1])
+                radius_list.append(rad)
+    return radius_list, numPoints_list, eigval_list, eigvec_list
+
+def get_centered_sparse(points, xbar, dtype=np.float64):
+	N, d = points.shape
+	points_T = points.transpose()
+	def matvec(v):
+		return points.dot(v) - xbar.dot(v)*np.ones(N)
+	def rmatvec(v):
+		return points_T.dot(v) - np.sum(v)*xbar
+	def matmat(V):
+		return points.dot(V) - np.vstack([xbar.dot(V)]*N)
+	def rmatmat(V):
+		return points_T.dot(V) - np.outer(xbar, np.sum(V, axis=0))
+	return LinearOperator(points.shape, matvec, rmatvec, matmat, dtype, rmatmat)
+
+def Sparse_eigen_calc_from_dist_mat_uncentered(cloud, xbar, dist_mat, center_ind, Rend, radint=.01, k=10):
+    """
+    This function iterates through specidic radii values and performs PCA at the given radius. The PCA values (eigenvalues, eigenvectors) are then saved and returned in a multidimensional list.
+    Also, this function requires the numpy, random, and scipy packages for proper use.
+
+    Parameters:
+        cloud (arr): a multidimensional point cloud array that contains the coordinates of the points in the cloud
+        center_ind (int): the index of the desired point on which the sphere is centered
+        radstart (int): the first radius value of the expanding sphere
+        radend (int): the final value (included) of the expanding spherical radius
+        radint (float): Default = .01; the interval (step size) at which the radius expands
+    """
+    N, d = cloud.shape # Get number N of points and dimension d of ambient space
+    assert dist_mat.shape == (N, N) # Assert agreement between cloud.shape and dist_mat.shape
+
+    dist_vec = dist_mat[center_ind, :]
+    sorted_vec = np.sort(dist_vec)
+    radii = np.arange(sorted_vec[k], Rend + radint, radint)
+    indices = list(range(N))
+    indices.sort(key=lambda x: dist_vec[x])
+    radius_list = []
+    eigval_list = []
+    eigvec_list = []
+    numPoints_list = [] #track the number of points 
+    for rad, cands in two_index_iterator(radii, indices, key=lambda x: dist_vec[x]):
+        if len(cands) > 0:
+            new_cands = vstack([cloud[cand, :] for cand in cands])
+            try:
+                points = vstack([points, new_cands])
+            except NameError:
+                points = new_cands
+            if rad > Rend:
+                break;
+            else:
+                # Get sample size
+                n = points.shape[0]
+                # Get centered "sparse" matrix
+                A = get_centered_sparse(points, xbar)
+                #svd for the top k
+                u, s, vt = svds(A, k)
                 eigvals = np.square(s)/(n-1)
                 radius_list.append(rad)
                 eigval_list.append(np.square(s)/(n-1))
