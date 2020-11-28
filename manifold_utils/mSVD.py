@@ -370,7 +370,7 @@ def get_centered_sparse(points, xbar, dtype=np.float64):
 		return points_T.dot(V) - np.outer(xbar, np.sum(V, axis=0))
 	return LinearOperator(points.shape, matvec, rmatvec, matmat, dtype, rmatmat)
 
-def Sparse_eigen_calc_from_dist_mat_uncentered(cloud, xbar, dist_mat, center_ind, Rend, radint=.01, k=10):
+def Sparse_eigen_calc_from_dist_mat_uncentered(cloud, dist_mat, center_ind, Rend, radint=.01, k=10):
     """
     This function iterates through specidic radii values and performs PCA at the given radius. The PCA values (eigenvalues, eigenvectors) are then saved and returned in a multidimensional list.
     Also, this function requires the numpy, random, and scipy packages for proper use.
@@ -406,6 +406,8 @@ def Sparse_eigen_calc_from_dist_mat_uncentered(cloud, xbar, dist_mat, center_ind
             else:
                 # Get sample size
                 n = points.shape[0]
+                # Get sample mean
+                xbar = points.mean(axis=0)
                 # Get centered "sparse" matrix
                 A = get_centered_sparse(points, xbar)
                 #svd for the top k
