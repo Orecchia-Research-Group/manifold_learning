@@ -22,29 +22,30 @@ def hypersphere(npoints, ndim):
                           axis=0)  # divides each vector by its norm, which turns each vector into a unit vector (length 1). Here we obtain samples from the unit sphere in the dimension we stated in the beginning of the function.
     return (vec)
 
-def two_index_iterator(thresholds, candidates, key=None):
-    """
-    Takes two iterables (sorted in increasing order) and returns the tuple (a, b)
-    at each iteration. a is the current value of thresholds, and b is a list of all
-    values between the previous threshhold and the current threshhold, inclusive
-    candidates does not have to be sorted in increasing order, so long as a key argument
-    is given which maps candidates to an increasning sequence
-    """
-    # Create auxiliary key function
-    true_key = lambda x: x if not key else key(x)
-    # initialize candidate indices
-    cand_ind = 0
-    for thresh in thresholds:
-        new_candidates = []
-        try:
-            while true_key(candidates[cand_ind]) <= thresh:
-                new_candidates.append(candidates[cand_ind])
-                cand_ind += 1
-                if cand_ind == len(candidates):
-                    break
-        except IndexError:
-            pass
-        yield thresh, new_candidates
+class two_index_iterator:
+    def __init__(self, thresholds, candidates, key=None):
+        self.thresholds = thresholds
+        self.candidates = candidates
+        # Create auxiliary key function
+        self.true_key = lambda x: x if not key else key(x)
+        # initialize candidate indices
+
+    def __iter__(self):
+        cand_ind = 0
+        for thresh in self.thresholds:
+            new_candidates = []
+            try:
+                while self.true_key(self.candidates[cand_ind]) <= thresh:
+                    new_candidates.append(self.candidates[cand_ind])
+                    cand_ind += 1
+                    if cand_ind == len(self.candidates):
+                        break
+            except IndexError:
+                pass
+            yield thresh, new_candidates
+
+    def __len__(self):
+        return len(self.thresholds)
 
 ### Function for obtaining eigenvalues while iterating through radii
 
