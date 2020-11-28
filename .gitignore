@@ -3,6 +3,7 @@ data/*
 data/__pycache__/*
 mls/__pycache__/*
 tests/__pycache__/*
+ilc_data/__pycache__/*
 kyle/.ipynb_checkpoints/*
 manifold_utils/__pycache__/*
 tests/.ipynb_checkpoints/*

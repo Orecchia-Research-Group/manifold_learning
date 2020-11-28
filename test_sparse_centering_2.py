@@ -5,7 +5,7 @@ import scipy.sparse
 from manifold_utils.mSVD import hypersphere, eigen_calc_from_dist_mat, get_centered_sparse, Sparse_eigen_calc_from_dist_mat_uncentered
 from manifold_utils.iga import iga
 
-points = hypersphere(100, 100)
+points = np.vstack([hypersphere(2, 100).T, np.zeros((98, 100))]).T
 points += 1
 points_sparse = scipy.sparse.csr_matrix(points)
 dist_mat = euclid(points)
@@ -30,7 +30,7 @@ ax1 = fig.add_subplot(121)
 ax2 = fig.add_subplot(122)
 
 eigvals = np.stack(eigvals, axis=0)
-print(eigvals.shape)
+#print(eigvals.shape)
 for j in range(eigvals.shape[1]):
 	ax1.plot(eigvals[:, j])
 
@@ -48,7 +48,7 @@ igas = [eigvecs[j, :, :].dot(tru_eigvecs[j, :, -10:]) for j in range(eigvecs.sha
 dists = []
 for azalia in igas:
 	_, s, _ = np.linalg.svd(azalia)
-	print(180 * np.arccos(s) / np.pi)
+	#print(180 * np.arccos(s) / np.pi)
 	dist = np.sum(np.square(np.arccos(s)))
 	dists.append(dist)
 
@@ -56,4 +56,4 @@ fig = plt.figure()
 ax = fig.add_subplot(111)
 ax.plot(dists)
 
-plt.show()
+#plt.show()
