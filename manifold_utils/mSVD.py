@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.sparse.linalg import svds, LinearOperator
 from scipy.sparse import vstack
 import scipy
+from tqdm import tqdm
 from manifold_utils.power_iteration import iterated_power_method
 
 def hypersphere(npoints, ndim):
@@ -395,7 +396,7 @@ def Sparse_eigen_calc_from_dist_mat_uncentered(cloud, dist_mat, center_ind, Rend
     eigval_list = []
     eigvec_list = []
     numPoints_list = [] #track the number of points 
-    for rad, cands in two_index_iterator(radii, indices, key=lambda x: dist_vec[x]):
+    for rad, cands in tqdm(two_index_iterator(radii, indices, key=lambda x: dist_vec[x])):
         if len(cands) > 0:
             new_cands = vstack([cloud[cand, :] for cand in cands])
             try:

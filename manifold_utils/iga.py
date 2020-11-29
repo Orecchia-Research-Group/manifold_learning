@@ -29,7 +29,14 @@ def chakraborty_express(X, Y, t):
 
 	# Move length t along geodesic from X to Y on Grassmann
 	cos_term = X @ Vh.T
-	cos_term_complete = cos_term @ np.cos(Theta*t)
+	try:
+		cos_term_complete = cos_term @ np.cos(Theta*t)
+	except ValueError:
+		err_str = ""
+		err_str += "shape of cos_term: "+str(cos_term.shape)+"\n"
+		err_str += "shape of Theta: "+str(Theta.shape)+"\n"
+		err_str += "shape of P: "+str(P.shape)+"\n"
+		raise ValueError(err_str)
 	sin_term_complete = U[:, :d] @ np.sin(Theta*t)
 	new_mat = cos_term_complete + sin_term_complete
 
