@@ -111,3 +111,8 @@ def get_dist_mat_var():
 		dist_mat = euclid(ILCs)
 		np.save("data/dist_mat_var.npy", dist_mat)
 		return dist_mat
+
+def get_index_to_gene():
+	ILC = sc.read("data/sct_variable.h5ad")
+	ILC_df = ILC.to_df()
+	return dict(enumerate(ILC_df.columns))
