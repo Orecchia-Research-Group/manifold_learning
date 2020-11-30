@@ -1,21 +1,24 @@
+from itertools import product
 import numpy as np
 import matplotlib.pyplot as plt
-from manifold_utils.iga import iga
-from ilc_data.ilc_loader import *
+from tqdm import tqdm
+from manifold_utils.iga import iga, arccos_catch_nan
+from ilc_data.ilc_loader import get_index_to_gene
 
-num_inds = 17
+indices = [2, 3, 5, 8, 10, 11, 13, 15, 16]
+num_inds = len(indices)
 
 radii_list = []
 eigval_list = []
 eigvec_list = []
-for j in range(num_inds):
+for j in indices:
 	radii_list.append(np.load("radii_"+str(j)+".npy"))
 	eigval_list.append(np.load("eigvals_"+str(j)+".npy"))
 	eigvecs = np.load("eigvecs+"+str(j)+".npy")
 	eigvec_list.append(np.swapaxes(eigvecs, 1, 2))
 
-Rmins = [35.5, 32,   37.5, 36,   35,   37.5, 37.5, 33.5, 38,   38, 37,   36, 42, 37, 40, 38, 38]
-Rmaxs = [37.5, 33.5, 39,   37.5, 37.5, 39,   38,   34,   39.5, 39, 38.5, 39, 44, 39, 42, 40, 40]
+Rmins = [37.5, 36,   37.5, 37,   38,   36, 37, 38, 38]
+Rmaxs = [39,   37.5, 39,   38.5, 39.5, 39, 39, 40, 40]
 
 Rmin_inds = []
 Rmax_inds = []
@@ -40,26 +43,30 @@ for eigvecs, Rmin_ind, Rmax_ind in zip(eigvec_list, Rmin_inds, Rmax_inds):
 
 ind_to_gene = get_index_to_gene()
 
-def tangent_gene_plots(ax1, ax2, azalia, num_amb_vecs=20):
-	mags = np.sum(np.square(azalia), axis=1)
+def paired_proj_plots(ax1, ax2, azalia1, azalia2, num_amb_vecs=20, ylabel=""):
+	mags1 = np.sqrt(np.sum(np.square(azalia1), axis=1))
+	mags2 = np.sqrt(np.sum(np.square(azalia2), axis=1))
+	mags = mags1 * mags2
 
-	indices = list(range(azalia.shape[0]))
+	indices = list(range(azalia1.shape[0]))
 	sorted_mags = np.sort(mags)[::-1]
 	indices.sort(key=lambda x: mags[x], reverse=True)
 
 	ax1.bar(list(range(num_amb_vecs)), sorted_mags[:num_amb_vecs],
-			tick_label=[ind_to_gene[ind] for ind in indices[:num_amb_vecs]])
-#	ax1.set_xticklabels(ax1.get_xticklabels(), rotation="vertical", fontsize=6)
+		tick_label=[ind_to_gene[ind] for ind in indices[:num_amb_vecs]])
 	ax1.set_xticklabels(ax1.get_xticklabels(), rotation=45, fontsize=6)
-#	ax1.set_ylabel("Magnitude of Projection")
-	ax1.set_ylabel("Cheerio "+str(j))
+	ax1.set_ylabel(ylabel)
 
 	ax2.plot(sorted_mags)
 
-fig = plt.figure(figsize=(14, 2.5*num_inds))
-for j, azalia in enumerate(azalias):
-	ax1 = fig.add_subplot(num_inds, 2, 2*j+1)
-	ax2 = fig.add_subplot(num_inds, 2, 2*j+2)
-	tangent_gene_plots(ax1, ax2, azalia)
+for j, ind_j in enumerate(indices):
+	for k, ind_k in enumerate(indices):
+		if j < k:
+			fig = plt.figure(figsize=(10, 7))
+			ax1 = fig.add_subplot(121)
+			ax2 = fig.add_subplot(122)
+			ylabel = str(ind_j)+" to "+str(ind_k)
+			paired_proj_plots(ax1, ax2, azalias[j], azalias[k], ylabel=ylabel)
 
-fig.savefig("tangent_genes.pdf")
+			fig.savefig("figures/"+ylabel+".pdf")
+			plt.close(fig)

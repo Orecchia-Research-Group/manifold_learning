@@ -59,3 +59,15 @@ def iga(stiefel_list):
 		else:
 			X = chakraborty_express(X, Y, (j+1)**(-1))
 	return X
+
+def arccos_catch_nan_scalar(scalar):
+	"""
+	Implement numpy.arccos on a scalar value, except catch NaNs and
+	convert to zero
+	"""
+	temp = np.arccos(scalar)
+	return 0 if np.isnan(temp) else temp
+
+# Implement numpy.arccos on an array, except catch NaNs and convert
+# to zero
+arccos_catch_nan = np.vectorize(arccos_catch_nan_scalar)

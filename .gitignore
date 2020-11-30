@@ -11,8 +11,10 @@ tests/.ipynb_checkpoints/*
 *.png
 *.csv
 *.h5ad
-+
 *.npz
 *.npy
 ILC analysis.ipynb
 *.jpg
+*.pdf
+figures/*
+loadings/*
