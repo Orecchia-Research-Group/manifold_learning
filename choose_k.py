@@ -5,7 +5,7 @@ from tqdm import tqdm
 from manifold_utils.mSVD import eigen_plot
 from manifold_utils.iga import iga, arccos_catch_nan
 
-indices = [2, 3, 5, 8, 10, 13, 15, 16]
+indices = [2, 3, 5, 10, 8, 13, 15, 16]
 num_inds = len(indices)
 radii_list = []
 eigval_list = []
@@ -16,10 +16,8 @@ for j in indices:
 	eigvecs = np.load("eigvecs+"+str(j)+".npy")
 	eigvec_list.append(np.swapaxes(eigvecs, 1, 2))
 
-#Rmins = [35.5, 32,   37.5, 36,   35,   37.5, 37.5, 33.5, 38,   38, 37,   36, 42, 37, 40, 38, 38]
-#Rmaxs = [37.5, 33.5, 39,   37.5, 37.5, 39,   38,   34,   39.5, 39, 38.5, 39, 44, 39, 42, 40, 40]
-Rmins = [37.5, 36,   37.5, 37,   38,   37, 38, 38]
-Rmaxs = [39,   37.5, 39,   38.5, 39.5, 39, 40, 40]
+Rmins = [37.5, 36,   37.5, 38,   37,   37, 38, 38]
+Rmaxs = [39,   37.5, 39,   39.5, 38.5, 39, 40, 40]
 
 Rmin_inds = []
 Rmax_inds = []
@@ -37,7 +35,8 @@ for radii, Rmin, Rmax in zip(radii_list, Rmins, Rmaxs):
 
 cmap = plt.get_cmap("binary")
 names = ["Grassmann Distance", "Mean Jordan (Degrees)", "Max Jordan (Degrees)", "Min Jordan (Degrees)"]
-normalize_grass = Normalize(0, np.sqrt(5)*np.pi/2)
+#normalize_grass = Normalize(0, np.sqrt(5)*np.pi/2)
+normalize_grass = None
 #normalize_jordan = Normalize(40, 90)
 normalize_jordan = Normalize(0, 90)
 normalize_dict = dict(zip(names, [normalize_grass, normalize_jordan, normalize_jordan, normalize_jordan]))

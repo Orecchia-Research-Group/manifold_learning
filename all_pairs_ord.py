@@ -1,4 +1,3 @@
-from itertools import product
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -42,26 +41,34 @@ for eigvecs, Rmin_ind, Rmax_ind in zip(eigvec_list, Rmin_inds, Rmax_inds):
 	azalias.append(iga(hyperplanes))
 
 ind_to_gene = get_index_to_gene()
-num_genes = 3000
 
-def plot_loadings(ax, azalia, num_loadings=15):
-	gene_indices = list(range(num_genes))
-	mags = np.sqrt(np.sum(np.square(azalia), axis=1))
+def paired_proj_plots(ax1, ax2, azalia1, azalia2, num_amb_vecs=20, ylabel=""):
+	mags1 = np.sqrt(np.sum(np.square(azalia1), axis=1))
+	mags2 = np.sqrt(np.sum(np.square(azalia2), axis=1))
+	ratio = np.array([(mags1[j]/mags2[j] if mags2[j] != 0 else 0) for j in range(mags1.shape[0])])
+	mags = np.array([0 if ratio[j] == 0 else np.max([ratio[j], ratio[j]**(-1)]) for j in range(ratio.shape[0])])
+#	to_max = np.stack([ratio, ratio**(-1)], axis=-1)
+#	mags = np.max(to_max, axis=1)
+
+	indices = list(range(azalia1.shape[0]))
 	sorted_mags = np.sort(mags)[::-1]
-	gene_indices.sort(key=lambda x: mags[x], reverse=True)
+	indices.sort(key=lambda x: mags[x], reverse=True)
 
-	inds_for_loading = gene_indices[:num_loadings]
-	genes_for_loading = [ind_to_gene[ind] for ind in inds_for_loading]
-	for ind, gene in zip(inds_for_loading, genes_for_loading):
-		ax.plot(azalia[ind, 0], azalia[ind, 1], "bo", ms=5)
-		ax.annotate(gene, (azalia[ind, 0], azalia[ind, 1]))
-	ax.axvline(0, color="k")
-	ax.axhline(0, color="k")
+	ax1.bar(list(range(num_amb_vecs)), sorted_mags[:num_amb_vecs],
+		tick_label=[ind_to_gene[ind] for ind in indices[:num_amb_vecs]])
+	ax1.set_xticklabels(ax1.get_xticklabels(), rotation=45, fontsize=6)
+	ax1.set_ylabel(ylabel)
 
-for macro_ind, azalia in zip(indices, azalias):
-	fig = plt.figure()
-	ax = fig.add_subplot(111)
-	plot_loadings(ax, azalia)
-	ax.set_title("Cheerio "+str(macro_ind))
-	fig.savefig("loadings/"+str(macro_ind)+".jpg")
-	plt.close(fig)
+	ax2.plot(sorted_mags)
+
+for j, ind_j in enumerate(indices):
+	for k, ind_k in enumerate(indices):
+		if j < k:
+			fig = plt.figure(figsize=(10, 7))
+			ax1 = fig.add_subplot(121)
+			ax2 = fig.add_subplot(122)
+			ylabel = str(ind_j)+" to "+str(ind_k)
+			paired_proj_plots(ax1, ax2, azalias[j], azalias[k], ylabel=ylabel)
+
+			fig.savefig("ords_mag/"+ylabel+".jpg")
+			plt.close(fig)

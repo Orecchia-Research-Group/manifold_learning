@@ -5,7 +5,8 @@ from tqdm import tqdm
 from manifold_utils.iga import iga, arccos_catch_nan
 from ilc_data.ilc_loader import get_index_to_gene
 
-indices = [2, 3, 5, 8, 10, 11, 13, 15, 16]
+#indices = [2, 3, 5, 8, 10, 11, 13, 15, 16]
+indices = list(range(17))
 num_inds = len(indices)
 
 radii_list = []
@@ -17,8 +18,10 @@ for j in indices:
 	eigvecs = np.load("eigvecs+"+str(j)+".npy")
 	eigvec_list.append(np.swapaxes(eigvecs, 1, 2))
 
-Rmins = [37.5, 36,   37.5, 37,   38,   36, 37, 38, 38]
-Rmaxs = [39,   37.5, 39,   38.5, 39.5, 39, 39, 40, 40]
+Rminspre = [35.5, 32,   37.5, 36,   35,   37.5, 37.5, 33.5, 38,   38, 37,   36, 42, 37, 40, 38, 38]
+Rmaxspre = [37.5, 33.5, 39,   37.5, 37.5, 39,   38,   34,   39.5, 39, 38.5, 39, 44, 39, 42, 40, 40]
+Rmins = [Rminspre[j] for j in indices]
+Rmaxs = [Rmaxspre[j] for j in indices]
 
 Rmin_inds = []
 Rmax_inds = []
