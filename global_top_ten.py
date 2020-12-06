@@ -2,16 +2,20 @@ from time import time
 import numpy as np
 from scipy.sparse.linalg import svds
 import matplotlib.pyplot as plt
+import scanpy as sc
 from manifold_utils.mSVD import get_centered_sparse
 from ilc_data.ilc_loader import get_sct_var_sparse, get_index_to_gene
 
 sparse_var = get_sct_var_sparse()
+_, sc_eigvecs, _, _ = sc.pp.pca(sparse_var, n_comps=10, return_info=True)
+
 lin_op = get_centered_sparse(sparse_var, sparse_var.mean(axis=0))
 
 u, s, vt = svds(lin_op, 10)
-print(s)
 
-print(lin_op @ vt.T)
+_, pre_jordan, _ = np.linalg.svd(vt @ sc_eigvecs.T)
+print(pre_jordan)
+print(vt @ sc_eigvecs.T)
 
 ind_to_gene = get_index_to_gene()
 num_bars = 30
