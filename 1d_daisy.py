@@ -56,7 +56,7 @@ def plot_loadings(ax, azalia, num_loadings=10):
 	gene_indices = list(range(num_genes))
 	mags = np.sqrt(np.sum(np.square(azalia), axis=1))
 	sorted_mags = np.sort(mags)[::-1]
-	gene_indices.sort(key=lambda x: mags[x], reverse=True)
+	gene_indices.sort(key=lambda x: sorted_mags[x], reverse=True)
 
 	inds_for_loading = gene_indices[:num_loadings]
 	genes_for_loading = [ind_to_gene[ind] for ind in inds_for_loading]

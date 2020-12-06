@@ -116,3 +116,7 @@ def get_index_to_gene():
 	ILC = sc.read("data/sct_variable.h5ad")
 	ILC_df = ILC.to_df()
 	return dict(enumerate(ILC_df.columns))
+
+def get_cell_topic_weights():
+	topic_df = pd.read_csv("data/topics/usage.csv", index_col=0)
+	return topic_df.to_numpy()
