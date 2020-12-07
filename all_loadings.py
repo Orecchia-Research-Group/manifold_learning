@@ -5,7 +5,6 @@ from tqdm import tqdm
 from manifold_utils.iga import iga, arccos_catch_nan
 from ilc_data.ilc_loader import get_index_to_gene
 
-#indices = [2, 3, 5, 8, 10, 11, 13, 15, 16]
 indices = list(range(17))
 num_inds = len(indices)
 

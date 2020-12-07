@@ -8,7 +8,6 @@ from ilc_data.ilc_loader import get_sct_var_sparse, get_index_to_gene
 trail_indices = np.load("data/trail_indices.npy")
 sparse_var = get_sct_var_sparse()
 
-#indices = [2, 3, 5, 8, 10, 11, 13, 15, 16]
 indices = list(range(17))
 num_inds = len(indices)
 true_indices = [trail_indices[j] for j in indices]
