@@ -12,6 +12,10 @@ def get_sct_var_sparse():
 	ILC = sc.read("data/sct_variable.h5ad")
 	return ILC.layers["norm_data"]
 
+def get_sct_var_scale():
+	ILC = sc.read("data/sct_variable.h5ad")
+	return ILC.layers["scale_data"].todense()
+
 def get_PCA_coord():
 	ILC = sc.read("data/sct.h5ad")
 	return ILC.obsm["X_pca"]
@@ -112,6 +116,20 @@ def get_dist_mat_var():
 		np.save("data/dist_mat_var.npy", dist_mat)
 		return dist_mat
 
+def get_dist_vec_scale(ind):
+	try:
+		return np.load("data/dist_vec_scale_"+str(ind)+".npy")
+
+	except FileNotFoundError:
+		print("Generating dist_vec_scale_"+str(ind)+"...")
+		#ILCs_reads, _, _ = get_cells_of_interest()
+		#ILCs = np.array(ILCs_reads)
+		ILCs = get_sct_var_scale()
+		ILCs_centered = ILCs - ILCs[ind, :]
+		dist_vec = np.linalg.norm(ILCs_centered, axis=1)
+		np.save("data/dist_vec_scale_"+str(ind)+".npy", dist_vec)
+		return dist_vec
+
 def get_index_to_gene():
 	ILC = sc.read("data/sct_variable.h5ad")
 	ILC_df = ILC.to_df()
@@ -120,3 +138,8 @@ def get_index_to_gene():
 def get_cell_topic_weights():
 	topic_df = pd.read_csv("data/topics/usage.csv", index_col=0)
 	return topic_df.to_numpy()
+
+def get_radii_scale():
+	Rmins = [96,  90, 76, 61, 68, 66, 72, 70, 72, 70, 74, 82, 117, 114, 130, 110, 94]
+	Rmaxs = [100, 94, 80, 65, 72, 70, 76, 72, 76, 74, 78, 86, 120, 120, 135, 114, 98]
+	return Rmins, Rmaxs
