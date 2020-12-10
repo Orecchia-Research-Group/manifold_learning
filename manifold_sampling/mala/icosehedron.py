@@ -4,6 +4,7 @@ import numpy.linalg
 import matplotlib.pyplot as plt
 import scipy.linalg
 import scipy.stats
+import networkx as nx
 
 from mala.potentials import to_spherical_coors
 
@@ -65,57 +66,6 @@ def generate_G(**kwargs):
             print('     Appears x',np.sum(res))
     return G_elts
 
-
-# VERTICES AND CENTROIDS--------------------------------------------------------
-
-class vertex:
-    def __init__(self,p,name):
-        self.p = p
-        self.name = name
-
-def generate_V(G):
-    v_0 = np.array([1,phi,0])
-
-    V = list()
-    for M in G:
-        V.append(vertex(np.matmul(M.mat,v_0),M.name+'*v_0'))
-    # add last bc when removing duplicates FIRST instance will be removed
-    V.append(vertex(v_0,'v_0'))
-    # remove duplicates
-    while len(V)!=12:
-        for idx,u in enumerate(V):
-            if np.sum(np.all(np.isclose(u.p, v.p)) for v in V)>1:
-                del V[idx]
-
-    return V
-
-# FACES ------------------------------------------------------------------------
-
-# the coordinates and spanning vectors of an icosehedron face in R^3
-class ambient_face:
-    def __init__(self,v_1,v_2,v_3):
-        self.v_1 = v_1
-        self.v_2 = v_2
-        self.v_3 = v_3
-
-        self.ctd_coors = np.mean([v_1.p,v_2.p,v_3.p],axis=0)
-
-        # we choose our basis vectors canonically so that b_1 is parallel to
-        # the line from v_1 to v_2, and so that b_2 is parallel to the line from
-        # the midpoint to v_3
-        self.basis_1 = (v_2.p - v_1.p)/np.linalg.norm(v_2.p - v_1.p,ord=2)
-
-        mdpt = np.mean([v_1.p,v_2.p],axis=0)
-        self.basis_2 = (v_3.p - mdpt)/np.linalg.norm(v_3.p - mdpt,ord=2)
-
-    def coor_shift_by_g(self,g):
-        return [np.matmul(g.mat,self.v_1.p),np.matmul(g.mat,self.v_2.p),
-        np.matmul(g.mat,self.v_3.p)]
-
-    def return_coors(self):
-        return [self.v_1.p,self.v_2.p,self.v_3.p]
-
-
 # PLANE PROJECTION -------------------------------------------------------------
 # recall command to_spherical_coors(x) in potentials.py
 
@@ -158,4 +108,160 @@ def chart2euclidean(x,face):
     x_augmented = np.array([x[0],x[1],1.0])
     return np.matmul(np.linalg.inv(R),x)
 
+# GRAPH REPRESENTATION ---------------------------------------------------------
+
+## vertices and centroids-------------------------------------------------------
+
+class vertex:
+    def __init__(self,p,name):
+        self.p = p
+        self.name = name
+
+def generate_V(G):
+    v_0 = np.array([1,phi,0])
+
+    V = list()
+    for M in G:
+        V.append(vertex(np.matmul(M.mat,v_0),M.name+'*v_0'))
+    # add last bc when removing duplicates FIRST instance will be removed
+    V.append(vertex(v_0,'v_0'))
+    # remove duplicates
+    while len(V)!=12:
+        for idx,u in enumerate(V):
+            if np.sum(np.all(np.isclose(u.p, v.p)) for v in V)>1:
+                del V[idx]
+
+    return V
+
+## faces------------------------------------------------------------------------
+# the coordinates and spanning vectors of an icosehedron face in R^3
+class ambient_face:
+    def __init__(self,v_1,v_2,v_3):
+        self.v_1 = v_1
+        self.v_2 = v_2
+        self.v_3 = v_3
+
+        self.ctd_coors = np.mean([v_1.p,v_2.p,v_3.p],axis=0)
+
+        # assume the radius of our chart is twice as big as that of the 
+        # faces' circumcircle
+        self.radius = 1.5*np.linalg.norm(v_1.p-self.ctd_coors,ord=2)
+
+        # we choose our basis vectors canonically so that b_1 is parallel to
+        # the line from v_1 to v_2, and so that b_2 is parallel to the line from
+        # the midpoint to v_3
+        self.basis_1 = (v_2.p - v_1.p)/np.linalg.norm(v_2.p - v_1.p,ord=2)
+
+        mdpt = np.mean([v_1.p,v_2.p],axis=0)
+        self.basis_2 = (v_3.p - mdpt)/np.linalg.norm(v_3.p - mdpt,ord=2)
+
+    def coor_shift_by_g(self,g):
+        return [np.matmul(g.mat,self.v_1.p),np.matmul(g.mat,self.v_2.p),
+        np.matmul(g.mat,self.v_3.p)]
+
+    def return_coors(self):
+        return [self.v_1.p,self.v_2.p,self.v_3.p]
+
+    def chart_transformation_map(self):
+        return chart_transformation(self)
+
+# matrices that delineate edge-crossings in our chart image, as per 
+# "Isabelle's Icosahedron"
+A_1 = np.array([[1,0],
+               [0,0]])
+
+A_2 = np.array([[np.cos(2*np.pi/3),-np.sin(2*np.pi/3)],
+               [np.sin(2*np.pi/3),np.cos(2*np.pi/3)]])
+
+A_3 = np.array([[np.cos(2*np.pi/3),np.sin(2*np.pi/3)],
+               [-np.sin(2*np.pi/3),np.cos(2*np.pi/3)]])
+
+def check_if_point_in_chart(p,face):
+    # check "facing same way"
+    if np.dot(p,face.ctd_coors)<0:
+        return False
+    # If on same hemisphere, check whether its projection lies within chart radius
+    p_prime = euclidean2chart(p,face)
+    return np.linalg.norm(p_prime,ord=2)< face.radius
+
+# return an array indicating if we've crossed the lines from 
+def check_if_point_in_face(p,face):
+    # check "facing same way"
+    if np.dot(p,face.ctd_coors)<0:
+        return False
+    # If on same hemisphere, check whether its projection lies within chart radius
+    p_prime = euclidean2chart(p,face)
+    return [(np.matmul(A,p_prime) > -face.radius/4) for A in [A_1,A_2,A_3]]
+
+## graph construction-----------------------------------------------------------
+
+# given a list of named vertices, builds the face graph, where faces are labeled
+# by tuples of the names of their vertices
+def build_face_graph(V,**kwargs):
+    # first, build the icosahedral graph (nodes correspond to verticess)
+    vertex_graph = nx.Graph()
+    vertex_graph.add_nodes_from([v.name for v in V])
+
+    for v in V:
+        vertex_graph.add_edges_from([(v.name,w.name) for w in five_closest_tuples(v,V)])
+
+    # Then take the dual graph
+    face_graph = build_dual_graph(vertex_graph)
+
+    # check that we've built something isomorphic to the true icosehedron 
+    # face graph
+    if 'verify' in kwargs and kwargs['verify']:
+        true_ico = nx.icosahedral_graph()
+        true_dual = build_dual_graph(true_ico)
+
+        mapping = dict()
+        for idx,v in enumerate(V):
+            mapping[v.name]= idx
+        relabeled_verts = nx.relabel.relabel_nodes(vertex_graph,mapping,
+            copy=True)
+
+        verify_graph = build_dual_graph(relabeled_verts)
+        assert nx.is_isomorphic(true_dual,verify_graph)
+    
+    return face_graph,vertex_graph
+
+# find neighboring vertices. Very crude rn: uses euclidean distance
+def five_closest_tuples(target,V_list):
+    closest = np.argsort([np.linalg.norm(target.p - v.p,ord=2) for v in V_list])
+    # omit closest: will be self
+    return [V_list[ii] for ii in closest[1:6]]
+
+# given a networkx graph, constructs a dual graph whose nodes correspond to
+# triangular faces
+def build_dual_graph(graph,**kwargs):
+    # get list of all of the triangles (faces) in icosehedron
+    faces=[tuple(x) for x in list(nx.enumerate_all_cliques(graph)) if len(x)==3]
+
+    face_graph = nx.Graph()
+    face_graph.add_nodes_from(faces)
+
+    for f in face_graph:
+        face_graph.add_edges_from(neighbor_tuples(f,face_graph))
+
+    if 'labels' in kwargs and kwargss['labels']:
+        nx.draw(face_graph,with_labels=True)
+    
+    return face_graph
+
+# given a tuple identifying a face and an ambient graph, identify all faces 
+# adjacent to our target 
+def neighbor_tuples(target_face,face_graph):
+    face_set = set(target_face)
+    # two faces are adjacent iff they share two nodes. not this excludes
+    # self-loops
+    return [(target_face,v) for v in face_graph if len(face_set & set(v))==2]
+
+# build a dictionary mapping nodes in our graph to face objects
+def build_face_map(face_graph,V):
+    face_map = dict()
+    for _,face_tuple in enumerate(face_graph.nodes()):
+        verts = [v for v in V if v.name in list(face_tuple)]
+        assert len(verts)==3
+        face_map[face_tuple] = ambient_face(verts[0],verts[1],verts[2])
+    return face_map
 

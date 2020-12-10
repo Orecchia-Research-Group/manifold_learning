@@ -81,24 +81,27 @@ def const_K_langevin(x,trajectory,metric_method,H,step_size,**kwargs):
 	G_inv = np.linalg.inv(G)
 	G_sqrt = np.linalg.cholesky(G)
 
-	natural_grad = np.matmul(G_inv,H.gradient(x))
+	natural_grad = np.matmul(G_inv,np.divide(H.gradient(x),H.eval(x)))
 
 	random_momentum = np.matmul(G_sqrt,np.random.normal(loc=0.0,
 		scale=1.0,size=x.size))
 
 	return x + 0.5*np.power(step_size,2)*natural_grad+step_size*random_momentum
 
-def empirical_Fisher_metric(H,x,traj):
+def empirical_Fisher_metric(H,x,traj,burnin):
 	# if we have fewer observations than dimensions, we can't compute a 
 	# nonsingular covariance matrix
-	if len(traj)<=x.size:
+	# add a buffer to collect more steps because unlucky first iterations
+	# can really mess us up
+	if len(traj)<=burnin:
 		return np.identity(x.size)
 	# a (no. observations) x (dimensions) matrix
 	# each "observation" is the gradient of the log-likelihood at previous pts
 	data = np.asarray([v.ll_grad for v in traj])
 
 	# set rowvar=False because each row of data is an observation
-	F = np.cov(data,rowvar=False)
+	F = np.cov(data,rowvar=0)
+	# this is the check numpy will use to determine invertibility
 	assert linalg.cond(F) < 1/sys.float_info.epsilon
 
 	# "normalize"

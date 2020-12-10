@@ -33,7 +33,8 @@ def plot_2D_evolution(H,traj,**kwargs):
     h = plt.contourf(xx,yy,F,alpha=0.5,cmap='gray')
     plt.title('f')
     plt.plot(x_track,y_track,'b')
-    plt.plot(x_track[0],y_track[0],'r',marker="x", markersize=10)
+    plt.plot(x_track[0],y_track[0],'r',marker="x", markersize=10,label='init')
+    plt.legend()
     plt.show()
     
     # default behavior is to plot gradient quiverplot
@@ -155,7 +156,7 @@ def Gaussian_convergence(H,traj,**kwargs):
     est_mu = [np.mean(data[(up_to_idx-sliding_window):up_to_idx,:], 
         axis=0) for up_to_idx in range(sliding_window,len(traj))]
     est_sigma = [np.cov(data[(up_to_idx-sliding_window):up_to_idx,:],
-        rowvar=False) for up_to_idx in range(sliding_window,len(traj))]
+        rowvar=0) for up_to_idx in range(sliding_window,len(traj))]
 
     mu_L2_error = [np.linalg.norm(true_mu-est) for est in est_mu]
     cov_F_error =[np.linalg.norm(true_sigma-est,ord='fro') for est in est_sigma]
@@ -165,8 +166,9 @@ def Gaussian_convergence(H,traj,**kwargs):
     ax1.plot(tsteps[sliding_window:], mu_L2_error)
     ax1.set_title('L2 error in mean')
 
-    ax2.plot(tsteps[sliding_window:], cov_F_error)
-    ax2.set_title('Frobenius error in covariance')
+    ax2.plot(tsteps[sliding_window:], 
+        np.divide(cov_F_error,np.linalg.norm(true_sigma,ord=2)))
+    ax2.set_title('Relative Frobenius error in covariance')
 
     if 'print_cov' in kwargs and kwargs['print_cov']:
         print('Last ',sliding_window,' samples: estimated covariance')

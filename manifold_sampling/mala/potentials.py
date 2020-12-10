@@ -76,7 +76,10 @@ def to_spherical_coors(x):
         theta = np.sign(y)*np.pi/2
     else:
         theta=np.arctan2(y,x)
-    phi =np.arctan(np.sqrt(np.power(x,2)+np.power(y,2))/z)
+    if z==0:
+        phi = np.pi/2
+    else:
+        phi =np.arctan(np.sqrt(np.power(x,2)+np.power(y,2))/z)
 
     return np.array([r,theta,phi])
 
