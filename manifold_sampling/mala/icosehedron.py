@@ -88,12 +88,29 @@ def R_y(theta):
         [-np.sin(theta), 0, np.cos(theta)]
         ])
 
+def righthand_face(face):
+    assert np.dot(face.ctd_coors,np.cross(face.basis_1,face.basis_2))!=0
+    return np.dot(face.ctd_coors,np.cross(face.basis_1,face.basis_2)) > 0
+
 # Build the matrix that rotates elts of a face to their 3D position
 def chart_transformation(face):
+    # get angles of centroid
     theta_c, phi_c = get_angles(face.ctd_coors)
-    v_prime = np.matmul(R_y(-phi_c)@R_z(-theta_c),face.basis_1)
-    theta_v,_ = get_angles(v_prime)
-    return R_z(-theta_v) @ R_y(-phi_c) @ R_z(-theta_c)
+    assert theta_c <= np.pi*2
+    assert phi_c <= np.pi
+
+    # check "handedness" of face: whether cross-prod of first and 2nd axis points
+    # outwards or inwards
+    # if right-handed, rotate to top of sphere
+    if righthand_face(face):
+        v_prime = np.matmul(R_y(-phi_c)@R_z(-theta_c),face.basis_1)
+        theta_v,_ = get_angles(v_prime)
+        return R_z(-theta_v) @ R_y(-phi_c) @ R_z(-theta_c)
+    # if left-handed, flip orientation to align first axis with positive x-axis
+    else:
+        v_prime = np.matmul(R_y(np.pi-phi_c)@R_z(-theta_c),face.basis_1)
+        theta_v,_ = get_angles(v_prime)
+        return R_z(-theta_v) @ R_y(np.pi-phi_c) @ R_z(-theta_c)
 
 # x is some numpy array with R^3 coordinates
 def euclidean2chart(x,face):
@@ -104,13 +121,17 @@ def euclidean2chart(x,face):
 def chart2euclidean(x,face):
     R = chart_transformation(face)
     # Our pre-image of our Euclidean embedding uses our chart coordinates as
-    # our x- and y-coors, and then assumes a z-coordinate of 1
-    x_augmented = np.array([x[0],x[1],1.0])
+    # our x- and y-coors, and then assumes a z-coordinate of 1 or -1 depending
+    # on handedness
+    if righthand_face(face):
+        x_augmented = np.array([x[0],x[1],1.0])
+    else:
+        x_augmented = np.array([x[0],x[1],-1.0])
     return np.matmul(np.linalg.inv(R),x)
 
 # GRAPH REPRESENTATION ---------------------------------------------------------
 
-## vertices and centroids-------------------------------------------------------
+## icosehedron vertices --------------------------------------------------------
 
 class vertex:
     def __init__(self,p,name):
