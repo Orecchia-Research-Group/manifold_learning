@@ -22,9 +22,7 @@ def test_chart_maps():
         face_obj = face_dict[face_node]
 
         # transform our face under our chart
-        R = ico.chart_transformation(face_obj)
-        R_v_1,R_v_2,R_v_3 = [ico.vertex(np.matmul(R,v),'dummy') for v in face_obj.return_coors()]
-        transformed_face = ico.ambient_face(R_v_1,R_v_2,R_v_3)
+        transformed_face = face_obj.chart_transform_face()
 
         # check that our centroid lies on the z-axis
         assert np.all(np.isclose(transformed_face.ctd_coors[:2],[0,0]))
@@ -39,5 +37,5 @@ def test_chart_maps():
 
         # our centroid and vertices should all be mapped to wihtin our chart
         # radius
-        for point in [face_obj.ctd_coors]+face_obj.return_coors():
+        for point in [face_obj.ctd_coors]+face_obj.list_vert_coors():
             assert ico.check_if_point_in_chart(point,face_obj)

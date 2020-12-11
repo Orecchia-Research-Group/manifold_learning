@@ -7,7 +7,7 @@ import scipy.stats
 import networkx as nx
 
 from mala.potentials import to_spherical_coors
-
+import mala.utils
 
 # USEFUL CONSTANTS--------------------------------------------------------------
 phi = (1 + 5 ** 0.5) / 2
@@ -22,7 +22,18 @@ G_1 = np.array([
 # order 2
 G_2 = np.diag([-1,1,1])
 
-# MATRIX GROUP -----------------------------------------------------------------
+# matrices that delineate edge-crossings in our chart image, as per 
+# "Isabelle's Icosahedron"
+A_1 = np.array([[1,0],
+               [0,0]])
+
+A_2 = np.array([[np.cos(2*np.pi/3),-np.sin(2*np.pi/3)],
+               [np.sin(2*np.pi/3),np.cos(2*np.pi/3)]])
+
+A_3 = np.array([[np.cos(2*np.pi/3),np.sin(2*np.pi/3)],
+               [-np.sin(2*np.pi/3),np.cos(2*np.pi/3)]])
+
+# VERTEX GENERATING GROUP ------------------------------------------------------
 
 class icosehedron_rotation:
     def __init__(self,matrix_rep,name):
@@ -65,6 +76,95 @@ def generate_G(**kwargs):
             res = list(np.array_equal(M.mat, M_i.mat) for M_i in G_elts)
             print('     Appears x',np.sum(res))
     return G_elts
+
+# ICOSEHEDRON VERTICES ---------------------------------------------------------
+
+class vertex:
+    def __init__(self,p,name):
+        self.p = p
+        self.name = name
+
+def generate_V(G):
+    v_0 = np.array([1,phi,0])
+
+    V = list()
+    for M in G:
+        V.append(vertex(np.matmul(M.mat,v_0),M.name+'*v_0'))
+    # add last bc when removing duplicates FIRST instance will be removed
+    V.append(vertex(v_0,'v_0'))
+    # remove duplicates
+    while len(V)!=12:
+        for idx,u in enumerate(V):
+            if np.sum(np.all(np.isclose(u.p, v.p)) for v in V)>1:
+                del V[idx]
+
+    return V
+
+# ICOSAHEDRON FACES-------------------------------------------------------------
+
+# describes the coordinates and spanning vectors of an icosehedron face in R^3,
+# with methods for mapping the face and points into the proper chart
+class ambient_face:
+    def __init__(self,v_1,v_2,v_3):
+        self.v_1 = v_1
+        self.v_2 = v_2
+        self.v_3 = v_3
+
+        self.ctd_coors = np.mean([v_1.p,v_2.p,v_3.p],axis=0)
+
+        # assume the radius of our chart is twice as big as that of the 
+        # faces' circumcircle
+        self.circumcircle_radius = np.linalg.norm(v_1.p-self.ctd_coors,ord=2)
+        self.chart_radius = 2*self.circumcircle_radius
+
+        # we choose our basis vectors canonically so that b_1 points from the
+        # centroid to v_1, and b_2 is parallel to the line from v_3 to v_2.
+        self.basis_1 = mala.utils.normalize(self.v_1.p-self.ctd_coors)
+        self.basis_2 = mala.utils.normalize(self.v_3.p - self.v_2.p)
+
+    def coor_shift_by_g(self,g):
+        return [np.matmul(g.mat,self.v_1.p),np.matmul(g.mat,self.v_2.p),
+        np.matmul(g.mat,self.v_3.p)]
+
+    def list_vert_objs(self):
+        return [self.v_1,self.v_2,self.v_3]
+
+    def list_vert_coors(self):
+        return [self.v_1.p,self.v_2.p,self.v_3.p]
+
+    def chart_transform_face(self):
+        R = chart_transformation(self)
+        R_v1,R_v2,R_v3 = [vertex(np.matmul(R,v.p),v.name) 
+            for v in self.list_vert_objs()]
+
+        return ambient_face(R_v1,R_v2,R_v3)
+
+    def euclidean2chart(self,x):
+        return euclidean2chart(x,self)
+
+    def chart2euclidean(self,x):
+        return chart2euclidean(x,self)
+
+def check_if_point_in_chart(p,face):
+    # check "facing same way"
+    if np.dot(p,face.ctd_coors)<0:
+        return False
+    # If on same hemisphere, check whether its projection lies within chart 
+    # radius
+    p_prime = euclidean2chart(p,face)
+    return np.linalg.norm(p_prime,ord=2) < face.chart_radius
+
+# return an array indicating if we've crossed the lines l1,l2, or l3
+# conventions taken from Isabella's Icosahedron 
+def check_if_point_in_face(p,face):
+    # check "facing same way"
+    if np.dot(p,face.ctd_coors)<0:
+        return False
+    # If on same hemisphere, check whether its projection lies within chart 
+    # radius
+    p_prime = euclidean2chart(p,face)
+    return [(np.matmul(A,p_prime) > -face.chart_radius/4) 
+        for A in [A_1,A_2,A_3]]
 
 # PLANE PROJECTION -------------------------------------------------------------
 # recall command to_spherical_coors(x) in potentials.py
@@ -130,91 +230,24 @@ def chart2euclidean(x,face):
     return np.matmul(np.linalg.inv(R),x)
 
 # GRAPH REPRESENTATION ---------------------------------------------------------
+# We describe our icosahedron using three objects. We build a list of
+# vertices v with coordinates in R^3 and names according to the group element 
+# that maps v_0 to v. (1) We make a VERTEX GRAPH, where nodes correspond to
+# vertices of the icosahedron and are named using the vertices' names, and
+# edges correspond to edges of the icosahedron. (2) We make a FACE GRAPH, where
+# nodes are tuples of vertex names describing a single face, and edges indicate 
+# faces that are adjacent by sharing two vertices. (3) We make a FACE DICT, 
+# which maps nodes in the face graph to ambient_face objects which contain 
+# geometric information.
 
-## icosehedron vertices --------------------------------------------------------
+def generate_icosahedron():
+    G = generate_G(verbose=False)
+    V = generate_V(G)
 
-class vertex:
-    def __init__(self,p,name):
-        self.p = p
-        self.name = name
+    face_graph,vertex_graph = build_face_graph(V,verify=True)
+    face_dict = build_face_map(face_graph,V)
 
-def generate_V(G):
-    v_0 = np.array([1,phi,0])
-
-    V = list()
-    for M in G:
-        V.append(vertex(np.matmul(M.mat,v_0),M.name+'*v_0'))
-    # add last bc when removing duplicates FIRST instance will be removed
-    V.append(vertex(v_0,'v_0'))
-    # remove duplicates
-    while len(V)!=12:
-        for idx,u in enumerate(V):
-            if np.sum(np.all(np.isclose(u.p, v.p)) for v in V)>1:
-                del V[idx]
-
-    return V
-
-## faces------------------------------------------------------------------------
-# the coordinates and spanning vectors of an icosehedron face in R^3
-class ambient_face:
-    def __init__(self,v_1,v_2,v_3):
-        self.v_1 = v_1
-        self.v_2 = v_2
-        self.v_3 = v_3
-
-        self.ctd_coors = np.mean([v_1.p,v_2.p,v_3.p],axis=0)
-
-        # assume the radius of our chart is twice as big as that of the 
-        # faces' circumcircle
-        self.radius = 1.5*np.linalg.norm(v_1.p-self.ctd_coors,ord=2)
-
-        # we choose our basis vectors canonically so that b_1 is parallel to
-        # the line from v_1 to v_2, and so that b_2 is parallel to the line from
-        # the midpoint to v_3
-        self.basis_1 = (v_2.p - v_1.p)/np.linalg.norm(v_2.p - v_1.p,ord=2)
-
-        mdpt = np.mean([v_1.p,v_2.p],axis=0)
-        self.basis_2 = (v_3.p - mdpt)/np.linalg.norm(v_3.p - mdpt,ord=2)
-
-    def coor_shift_by_g(self,g):
-        return [np.matmul(g.mat,self.v_1.p),np.matmul(g.mat,self.v_2.p),
-        np.matmul(g.mat,self.v_3.p)]
-
-    def return_coors(self):
-        return [self.v_1.p,self.v_2.p,self.v_3.p]
-
-    def chart_transformation_map(self):
-        return chart_transformation(self)
-
-# matrices that delineate edge-crossings in our chart image, as per 
-# "Isabelle's Icosahedron"
-A_1 = np.array([[1,0],
-               [0,0]])
-
-A_2 = np.array([[np.cos(2*np.pi/3),-np.sin(2*np.pi/3)],
-               [np.sin(2*np.pi/3),np.cos(2*np.pi/3)]])
-
-A_3 = np.array([[np.cos(2*np.pi/3),np.sin(2*np.pi/3)],
-               [-np.sin(2*np.pi/3),np.cos(2*np.pi/3)]])
-
-def check_if_point_in_chart(p,face):
-    # check "facing same way"
-    if np.dot(p,face.ctd_coors)<0:
-        return False
-    # If on same hemisphere, check whether its projection lies within chart radius
-    p_prime = euclidean2chart(p,face)
-    return np.linalg.norm(p_prime,ord=2)< face.radius
-
-# return an array indicating if we've crossed the lines from 
-def check_if_point_in_face(p,face):
-    # check "facing same way"
-    if np.dot(p,face.ctd_coors)<0:
-        return False
-    # If on same hemisphere, check whether its projection lies within chart radius
-    p_prime = euclidean2chart(p,face)
-    return [(np.matmul(A,p_prime) > -face.radius/4) for A in [A_1,A_2,A_3]]
-
-## graph construction-----------------------------------------------------------
+    return face_graph,vertex_graph,face_dict
 
 # given a list of named vertices, builds the face graph, where faces are labeled
 # by tuples of the names of their vertices
@@ -224,7 +257,8 @@ def build_face_graph(V,**kwargs):
     vertex_graph.add_nodes_from([v.name for v in V])
 
     for v in V:
-        vertex_graph.add_edges_from([(v.name,w.name) for w in five_closest_tuples(v,V)])
+        vertex_graph.add_edges_from([(v.name,w.name) 
+            for w in five_closest_tuples(v,V)])
 
     # Then take the dual graph
     face_graph = build_dual_graph(vertex_graph)
@@ -283,6 +317,13 @@ def build_face_map(face_graph,V):
     for _,face_tuple in enumerate(face_graph.nodes()):
         verts = [v for v in V if v.name in list(face_tuple)]
         assert len(verts)==3
-        face_map[face_tuple] = ambient_face(verts[0],verts[1],verts[2])
+        candidate_face = ambient_face(verts[0],verts[1],verts[2])
+        # If not righthanded, swap two vertices to make it righthanded
+        if not righthand_face(candidate_face):
+            candidate_face = ambient_face(verts[1],verts[0],verts[2])
+        face_map[face_tuple] = candidate_face
     return face_map
+
+
+
 

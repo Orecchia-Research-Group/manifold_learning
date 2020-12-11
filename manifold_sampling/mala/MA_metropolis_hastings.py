@@ -5,9 +5,10 @@ import numpy.linalg as linalg
 import matplotlib.pyplot as plt
 import scipy.linalg
 import mala.metropolis_hastings as mh
+import mala.icosehedron as ico
 
 # MANIFOLD-ADJUSTED METROPOLIS-HASTINGS ----------------------------------------
-# meta-algorithm for markov-chain monte-carlo
+# meta-algorithm for markov-chain monte-carlo, moving in ambient space
 # returns a list of positions attained
 def MAMH(M,H,update_rule,initial_point,max_steps,**kwargs):
 	trajectory=list()
@@ -39,6 +40,67 @@ def MAMH(M,H,update_rule,initial_point,max_steps,**kwargs):
 		observation_t = Snapshot(t,pos=x,grad=H.gradient(x))
 		observation_t.log_likelihood_grad(H)
 		trajectory.append(observation_t)
+
+	return trajectory
+
+# ICOSAHEDRON MANIFOLD-ADJUSTED METROPOLIS-HASTINGS ----------------------------
+class ico_point:
+	def __init__(self,chart_coords,face_node_idx,face_map):
+		self.face_node = face_node_idx
+		self.face_obj = face_map[face_node_idx]
+
+		self.face_coors = chart_coords
+		self.euclidean_coors = ico.chart2euclidean(chart_coords,self.face_obj)
+
+def ico_MAMH(H,max_steps,step_size):
+	face_graph,vertex_graph,face_dict = ico.generate_icosahedron()
+
+	trajectory=list()
+
+	if 'time_step' in kwargs:
+		time_span = np.linspace(0,max_steps,kwargs['time_step'])
+	else:
+		time_span = range(max_steps)
+
+	# chose some random initial point
+	# right now this isn't random, it's just arbitrary. we're initializing in
+	# the face_node corresponding to index 0, at the origin wrt that faces' 
+	# chart
+	x = ico_point(face_coords=np.array([0,0]),
+		face_node_idx =0,
+		face_map=face_dict)
+	trajectory.append(x)
+
+	# at each time step
+	for t in time_span:
+		# suggest a candidate next sample
+		# (we require this update rule be symmetric: p(x|y)=p(y|x))
+		x_cand_face_coors = icosehedron_langevin(x,H,step_size)
+		x_cand = ico_point(face_coords=x_cand_face_coors,
+			face_node_idx=x.face_node_idx,
+			face_map=face_dict)
+
+		# calculate the probability with which we'll accept the candidate
+		accept_rate = mh.Hastings_ratio(x.euclidean_coors,x_cand.euclidean_coors,H)
+		#print(accept_rate)
+		# flip a coin with this weight
+		if mh.weighted_coin(accept_rate):
+			x = x_cand
+		# check if we've left our face
+		if not np.all(ico.check_if_point_in_face(x.face_coords,x.face_obj)):
+			# find the next face we'll move to
+			next_face_node = face_across_edge(x.face_obj,x.face_coords,face_graph)
+			next_face_obj = face_dict[next_face_node]
+
+			# get coordinates of x in the chart of our next face
+			next_chart_coors = map_pt_btwn_charts(x.face_coords,x.face_obj,next_face_obj)
+
+			# update x
+			x = ico_point(face_coords=next_chart_coors,
+				face_node_idx =next_face_node,
+				face_map=face_dict)
+		# if we reject the candidate, x stays in its possition
+		trajectory.append(x)
 
 	return trajectory
 
@@ -88,6 +150,29 @@ def const_K_langevin(x,trajectory,metric_method,H,step_size,**kwargs):
 
 	return x + 0.5*np.power(step_size,2)*natural_grad+step_size*random_momentum
 
+def icosehedron_langevin(x,H,step_size):
+	G = ico_metric(x.face_coors)
+	G_inv = np.linalg.inv(G)
+	G_sqrt = np.linalg.cholesky(G)
+
+	# map our point to euclidean space, take the gradient, and project the
+	# gradient back into our chart
+	chart_gradient = ico.euclidean2chart(H.gradient(x.euclidean_coors),x.face_obj)
+	natural_grad = np.matmul(G_inv,np.divide(chart_gradient,H.eval(x.euclidean_coors)))
+
+	# take random impulse in R^2
+	random_momentum = np.matmul(G_sqrt,np.random.normal(loc=0.0,
+		scale=1.0,size=x.face_coors.size))
+
+	return x.face_coors + 0.5*np.power(step_size,2)*natural_grad+step_size*random_momentum
+
+# given an array in chart coordinates, return estinamted metric tensor
+def ico_metric(x):
+	sphere_radius = np.sqrt([1+np.power(phi,2)])
+	K = np.array([1/sphere_radius,1/sphere_radius])
+
+	return np.identity(2)+np.diag(x)@np.transpose(K)@K@np.diag(x)
+
 def empirical_Fisher_metric(H,x,traj,burnin):
 	# if we have fewer observations than dimensions, we can't compute a 
 	# nonsingular covariance matrix
@@ -125,10 +210,6 @@ def sphere_metric(M,H,x,step_size):
 	natural_grad = np.matmul(G_inv,H.gradient(x))
 
 	return
-
-	
-
-
 
 
 
