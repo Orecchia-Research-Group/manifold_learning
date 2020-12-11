@@ -7,11 +7,6 @@ import scipy.stats
 from mpl_toolkits.mplot3d import Axes3D
 import scipy.ndimage
 
-# BASICS -----------------------------------------------------------------------
-# given a vector return unit vector in same direction
-def normalize(x):
-    return np.divide(x,np.linalg.norm(x,ord=2))
-
 # PLOTTING IN 2D ---------------------------------------------------------------
 def plot_2D_evolution(H,traj,**kwargs):
     if isinstance(traj[0],np.ndarray):
