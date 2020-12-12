@@ -7,6 +7,8 @@ import scipy.stats
 from mpl_toolkits.mplot3d import Axes3D
 import scipy.ndimage
 
+import mala.icosehedron as ico
+
 # BASICS -----------------------------------------------------------------------
 
 # normalize a numpy array wrt its euclidean norm
@@ -112,9 +114,29 @@ def plot_3D_evolution(H,traj,**kwargs):
     ax.scatter(x_track[-1],y_track[-1], z_track[-1],c='r',marker='x',
         s=150,label='final pt')
     plt.legend()
+    if 'return_fig' in kwargs and kwargs['return_fig']:
+        return ax,fig
+    
     plt.show()
+    return
 
+# Input will be list of ico_points, which contain both chart and euclidean 
+# coordinates. defined in MA_metropolist_hastings
+def plot_on_icosahedron(H,traj,**kwargs):
+    # pull out evolution in 3D space
+    euclidean_trajectory = [p.euclidean_coors for p in traj]
+    ax,fig = plot_3D_evolution(H,euclidean_trajectory,return_fig=True)
 
+    # plot the rest of the icosahedron structure 
+    face_graph,vertex_graph,face_dict = ico.generate_icosahedron()
+    # scatter vertices and draw face outlines
+    for face_node in list(face_graph.nodes()):
+        u,v,w = face_dict[face_node].list_vert_coors()
+        for x,y in [[u,v],[v,w],[u,w]]:
+            ax.plot([x[0],y[0]],[x[1],y[1]],[x[2],y[2]],color='grey',alpha=0.5)
+        for v in face_dict[face_node].list_vert_coors():
+            ax.scatter(v[0],v[1],v[2],color='grey',alpha=0.5)
+    plt.show()
     return
 
 # ASSESSING PERFORMANCE --------------------------------------------------------

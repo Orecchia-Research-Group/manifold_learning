@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import scipy.linalg
 import scipy.stats
 import networkx as nx
+from itertools import compress
 
 from mala.potentials import to_spherical_coors
 import mala.utils
@@ -115,6 +116,7 @@ class ambient_face:
         # faces' circumcircle
         self.circumcircle_radius = np.linalg.norm(v_1.p-self.ctd_coors,ord=2)
         self.chart_radius = 2*self.circumcircle_radius
+        self.sphere_radius = np.linalg.norm(self.v_1.p)
 
         # we choose our basis vectors canonically so that b_1 points from the
         # centroid to v_1, and b_2 is parallel to the line from v_3 to v_2.
@@ -144,24 +146,63 @@ class ambient_face:
     def chart2euclidean(self,x):
         return chart2euclidean(x,self)
 
-def check_if_point_in_chart(p,face):
-    # check "facing same way"
-    if np.dot(p,face.ctd_coors)<0:
-        return False
-    # If on same hemisphere, check whether its projection lies within chart 
-    # radius
-    p_prime = euclidean2chart(p,face)
+    def print(self):
+        print('Face centered at ',self.ctd_coors)
+        print('     v_1 @ ',np.around(self.v_1.p,decimals=2),' named ',self.v_1.name)
+        print('     v_2 @ ',np.around(self.v_2.p,decimals=2),' named ',self.v_2.name)
+        print('     v_3 @ ',np.around(self.v_3.p,decimals=2),' named ',self.v_3.name)
+
+    def plot_in_face(self,point,**kwargs):
+        if 'in_chart_coors' in kwargs and kwargs['in_chart_coors']:
+            transformed_point = point
+        else:
+            transformed_point = self.euclidean2chart(point)
+
+        # Now plot face and point in the image of the chart
+        transformed_face = self.chart_transform_face()
+        
+        plt.figure()
+        # plot triangle sides
+        u,v,w = transformed_face.list_vert_coors()
+        for x,y in [[u,v],[v,w],[u,w]]:
+            plt.plot([x[0],y[0]],[x[1],y[1]],color='grey')
+        # scatter and label points
+        for idx,x in enumerate([u,v,w]):
+            plt.plot([x[0]],[x[1]],'o',label=idx)
+        # scatter our point
+        plt.plot([transformed_point[0]],[transformed_point[1]],'o',label='point')
+        plt.legend()
+        plt.show()
+        return
+
+def check_if_point_in_chart(p,face,**kwargs):
+    # if we're in chart coordinates already, we assume the point is on 
+    # same hemisphere as the face, since there's no way to "check"
+    if 'in_chart_coors' in kwargs and kwargs['in_chart_coors']:
+        p_prime = p
+    else:
+        # check "facing same way"
+        if np.dot(p,face.ctd_coors)<0:
+            return False
+        # If on same hemisphere, check whether its projection lies within chart 
+        # radius
+        p_prime = euclidean2chart(p,face)
     return np.linalg.norm(p_prime,ord=2) < face.chart_radius
 
 # return an array indicating if we've crossed the lines l1,l2, or l3
 # conventions taken from Isabella's Icosahedron 
-def check_if_point_in_face(p,face):
-    # check "facing same way"
-    if np.dot(p,face.ctd_coors)<0:
-        return False
-    # If on same hemisphere, check whether its projection lies within chart 
-    # radius
-    p_prime = euclidean2chart(p,face)
+def check_if_point_in_face(p,face,**kwargs):
+    # if we're in chart coordinates already, we assume the point is on 
+    # same hemisphere as the face, since there's no way to "check"
+    if 'in_chart_coors' in kwargs and kwargs['in_chart_coors']:
+        p_prime = p
+    else:
+        # check "facing same way"
+        if np.dot(p,face.ctd_coors)<0:
+            return False
+        # If on same hemisphere, check whether its projection lies within chart 
+        # radius
+        p_prime = euclidean2chart(p,face)
     return [(np.matmul(A,p_prime) > -face.chart_radius/4) 
         for A in [A_1,A_2,A_3]]
 
@@ -223,10 +264,10 @@ def chart2euclidean(x,face):
     # our x- and y-coors, and then assumes a z-coordinate of 1 or -1 depending
     # on handedness
     if righthand_face(face):
-        x_augmented = np.array([x[0],x[1],1.0])
+        x_augmented = np.array([x[0],x[1],face.sphere_radius])
     else:
-        x_augmented = np.array([x[0],x[1],-1.0])
-    return np.matmul(np.linalg.inv(R),x)
+        x_augmented = np.array([x[0],x[1],-face.sphere_radius])
+    return np.matmul(np.linalg.inv(R),x_augmented)
 
 # GRAPH REPRESENTATION ---------------------------------------------------------
 # We describe our icosahedron using three objects. We build a list of
@@ -334,6 +375,7 @@ def face_across_edge(face,side_crossings,face_graph):
     True in side_crossings. This method could be made faster by only searching
     faces adjacent to the original face in face_graph
     """
+    assert np.sum(side_crossings)==1
     # first, ID the edge we're traversing using a pair of vertices
     face_verts = (face.v_1.name,face.v_2.name,face.v_3.name)
     vertex_pairs = [(face_verts[1],face_verts[2]),(face_verts[0],face_verts[2]),
@@ -343,19 +385,27 @@ def face_across_edge(face,side_crossings,face_graph):
     # find a face that contains the same edge that isn't our og face
     edge_adjacent_face = [f for f in face_graph if len(set(edge) & set(f))==2
                        and set(f)!=set(face_verts)]
-
-    return edge_adjacent_face
+    # there should only be one face that meets these criteria
+    assert len(edge_adjacent_face)==1
+    return edge_adjacent_face[0]
 
 def map_pt_btwn_charts(pt,origin_face,dest_face):
     """
     pt is a numpy array of coordinates in the image of our origin face chart.
     pt needs to be in the overlap of the face charts
     """
-    assert check_if_point_in_chart(pt,origin_face)
-    assert check_if_point_in_chart(pt,dest_face)
+    try:
+        assert check_if_point_in_chart(pt,origin_face,in_chart_coors=True)
+    except:
+        print(pt)
+    assert np.all(check_if_point_in_face(origin_face.chart2euclidean(pt),
+        dest_face,in_chart_coors=False))
 
     # first, get Euclidean coordinates of our point
     euc_pt = chart2euclidean(pt,origin_face)
 
     # next, move into coordinates of second chart
     return euclidean2chart(euc_pt,dest_face)
+
+
+

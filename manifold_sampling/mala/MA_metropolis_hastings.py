@@ -45,14 +45,19 @@ def MAMH(M,H,update_rule,initial_point,max_steps,**kwargs):
 
 # ICOSAHEDRON MANIFOLD-ADJUSTED METROPOLIS-HASTINGS ----------------------------
 class ico_point:
-	def __init__(self,chart_coords,face_node_idx,face_map):
-		self.face_node = face_node_idx
-		self.face_obj = face_map[face_node_idx]
+	def __init__(self,chart_coors,face_node,face_map):
+		self.face_node = face_node
+		self.face_obj = face_map[face_node]
 
-		self.face_coors = chart_coords
-		self.euclidean_coors = ico.chart2euclidean(chart_coords,self.face_obj)
+		self.face_coors = chart_coors
+		self.euclidean_coors = self.face_obj.chart2euclidean(chart_coors)
 
-def ico_MAMH(H,max_steps,step_size):
+	def print(self):
+		print('New point')
+		print('     Chart coors=',self.face_coors)
+		print('     Euclidean coors=',self.euclidean_coors)
+
+def ico_MAMH(H,max_steps,step_size,**kwargs):
 	face_graph,vertex_graph,face_dict = ico.generate_icosahedron()
 
 	trajectory=list()
@@ -66,8 +71,8 @@ def ico_MAMH(H,max_steps,step_size):
 	# right now this isn't random, it's just arbitrary. we're initializing in
 	# the face_node corresponding to index 0, at the origin wrt that faces' 
 	# chart
-	x = ico_point(face_coords=np.array([0,0]),
-		face_node_idx =0,
+	x = ico_point(chart_coors=np.array([0,0]),
+		face_node =list(face_graph.nodes())[0],
 		face_map=face_dict)
 	trajectory.append(x)
 
@@ -76,29 +81,43 @@ def ico_MAMH(H,max_steps,step_size):
 		# suggest a candidate next sample
 		# (we require this update rule be symmetric: p(x|y)=p(y|x))
 		x_cand_face_coors = icosehedron_langevin(x,H,step_size)
-		x_cand = ico_point(face_coords=x_cand_face_coors,
-			face_node_idx=x.face_node_idx,
+		x_cand = ico_point(chart_coors=x_cand_face_coors,
+			face_node=x.face_node,
 			face_map=face_dict)
 
 		# calculate the probability with which we'll accept the candidate
-		accept_rate = mh.Hastings_ratio(x.euclidean_coors,x_cand.euclidean_coors,H)
-		#print(accept_rate)
+		accept_rate = mh.Hastings_ratio(x.euclidean_coors,
+			x_cand.euclidean_coors,H)
 		# flip a coin with this weight
 		if mh.weighted_coin(accept_rate):
+			# keep a copy of x around to compare for next step
+			x_last = x
 			x = x_cand
-		# check if we've left our face
-		if not np.all(ico.check_if_point_in_face(x.face_coords,x.face_obj)):
+		# check if we've left our face. note: the check uses euclidean coors
+		if not np.all(ico.check_if_point_in_face(x.euclidean_coors,x.face_obj)):
+			print('left our face')
+
+			print('     previous coors',x_last.face_coors)
+			x_last.face_obj.plot_in_face(x_last.face_coors,in_chart_coors=True)
+
+			print('     next coors in this face',x.face_coors)
+			x.face_obj.plot_in_face(x.face_coors,in_chart_coors=True)
 			# find the next face we'll move to
-			next_face_node = face_across_edge(x.face_obj,x.face_coords,face_graph)
+			next_face_node = ico.face_across_edge(x.face_obj,x.face_coors,
+				face_graph)
 			next_face_obj = face_dict[next_face_node]
 
 			# get coordinates of x in the chart of our next face
-			next_chart_coors = map_pt_btwn_charts(x.face_coords,x.face_obj,next_face_obj)
+			next_chart_coors = ico.map_pt_btwn_charts(x.face_coors,x.face_obj,
+				next_face_obj)
 
 			# update x
-			x = ico_point(face_coords=next_chart_coors,
-				face_node_idx =next_face_node,
+			x = ico_point(chart_coors=next_chart_coors,
+				face_node =next_face_node,
 				face_map=face_dict)
+
+			print('     coors in new face',x_last.face_coors)
+			x.face_obj.plot_in_face(x.face_coors,in_chart_coors=True)
 		# if we reject the candidate, x stays in its possition
 		trajectory.append(x)
 
@@ -168,8 +187,9 @@ def icosehedron_langevin(x,H,step_size):
 
 # given an array in chart coordinates, return estinamted metric tensor
 def ico_metric(x):
-	sphere_radius = np.sqrt([1+np.power(phi,2)])
-	K = np.array([1/sphere_radius,1/sphere_radius])
+	sphere_radius = np.sqrt([1+np.power(ico.phi,2)])
+	# in our case K should be a 1 x 2 tensor with entriees 1/r
+	K = np.array([1/sphere_radius,1/sphere_radius]).T
 
 	return np.identity(2)+np.diag(x)@np.transpose(K)@K@np.diag(x)
 
