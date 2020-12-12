@@ -44,14 +44,13 @@ class Double_well(Potential):
         self.cov_1 = gauss_1[1]
         self.mu_2 = gauss_2[0]
         self.cov_2 = gauss_2[1]
-        self.f = (lambda x:
-            scipy.stats.multivariate_normal.pdf(x, mean=self.mu_1, 
-                cov=self.cov_1)
-            + scipy.stats.multivariate_normal.pdf(x, mean=self.mu_2, 
-                cov=self.cov_2))
+
+        self.f_1 = lambda x: scipy.stats.multivariate_normal.pdf(x, mean=self.mu_1, cov=self.cov_1)
+        self.f_2 = lambda x: scipy.stats.multivariate_normal.pdf(x, mean=self.mu_2, cov=self.cov_2)
+        self.f = lambda x: self.f_1(x) + self.f_2(x)
         self.g = (lambda x:
-            -self.eval(x)*np.matmul(np.linalg.inv(self.cov_1),x-self.mu_1)
-            -self.eval(x)*np.matmul(np.linalg.inv(self.cov_2),x-self.mu_2) )
+            -self.f_1(x)*np.matmul(np.linalg.inv(self.cov_1),x-self.mu_1)
+            -self.f_2(x)*np.matmul(np.linalg.inv(self.cov_2),x-self.mu_2) )
         self.name = 'Double well'
 
 class Spherical(Potential):

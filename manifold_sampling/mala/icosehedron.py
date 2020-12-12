@@ -1,4 +1,3 @@
-
 import numpy as np
 import numpy.linalg
 import matplotlib.pyplot as plt
@@ -324,6 +323,39 @@ def build_face_map(face_graph,V):
         face_map[face_tuple] = candidate_face
     return face_map
 
+def face_across_edge(face,side_crossings,face_graph):
+    """
+    side_crossings is a list of booleans indicating whether we're crossing
+    over l1, l2, or l3 (recall these correspond to the lines between 
+    [ (x2,x3),(x1,x3),or (x1,x2)] respectively), as per conventions
+    in "Isabelle's Icosahedron"
 
+    NOTE: This implementation is correct so long as there is exactly one
+    True in side_crossings. This method could be made faster by only searching
+    faces adjacent to the original face in face_graph
+    """
+    # first, ID the edge we're traversing using a pair of vertices
+    face_verts = (face.v_1.name,face.v_2.name,face.v_3.name)
+    vertex_pairs = [(face_verts[1],face_verts[2]),(face_verts[0],face_verts[2]),
+                    (face_verts[0],face_verts[1])]
+    edge = list(compress(vertex_pairs,side_crossings))[0]
 
+    # find a face that contains the same edge that isn't our og face
+    edge_adjacent_face = [f for f in face_graph if len(set(edge) & set(f))==2
+                       and set(f)!=set(face_verts)]
 
+    return edge_adjacent_face
+
+def map_pt_btwn_charts(pt,origin_face,dest_face):
+    """
+    pt is a numpy array of coordinates in the image of our origin face chart.
+    pt needs to be in the overlap of the face charts
+    """
+    assert check_if_point_in_chart(pt,origin_face)
+    assert check_if_point_in_chart(pt,dest_face)
+
+    # first, get Euclidean coordinates of our point
+    euc_pt = chart2euclidean(pt,origin_face)
+
+    # next, move into coordinates of second chart
+    return euclidean2chart(euc_pt,dest_face)
