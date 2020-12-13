@@ -10,7 +10,6 @@ def test_chart_maps():
     G = ico.generate_G(verbose=False)
     V = ico.generate_V(G)
 
-    failures = list()
 
     face_graph,vertex_graph = ico.build_face_graph(V,verify=True)
 
@@ -35,7 +34,48 @@ def test_chart_maps():
         # check that our spanning vectors align with x and y
         assert np.all(np.isclose(transformed_face.basis_1,[1,0,0]))
 
-        # our centroid and vertices should all be mapped to wihtin our chart
-        # radius
-        for point in [face_obj.ctd_coors]+face_obj.list_vert_coors():
+        # our our centroid and vertices should be mapped to wihtin our chart radius
+        for point in face_obj.list_vert_coors()+[face_obj.ctd_coors]:
             assert ico.check_if_point_in_chart(point,face_obj)
+
+        # our centroid should be in our face
+        assert np.all(ico.check_if_point_in_face(face_obj.ctd_coors,face_obj))
+                        
+        # our vertices should be JUST too far out, so we'll pull them towards
+        # the centroid and then they should be within our char
+        for point in face_obj.list_vert_coors():
+            centered_pt = 0.1*(face_obj.ctd_coors - point) + 0.9*point
+            assert np.all(ico.check_if_point_in_face(centered_pt,face_obj))
+            
+def test_transitions():
+    face_graph,vertex_graph,face_dict = ico.generate_icosahedron()
+
+    # for each edge in our graph, make sure face_across_edge recovers
+    # the right face
+    for edge in face_graph.edges():
+        origin_node = edge[0]
+        destination_node = edge[1]
+
+        # figure out which edge of our origin face we've crossed
+        edge_vertices = list(set(origin_node) & set(destination_node))
+        ID_verts = [(v.name in edge_vertices) for
+            v in face_dict[origin_node].list_vert_objs()]
+        assert np.sum(ID_verts)==2
+        # build a list of booleans showing whether we've crossed l1,l2, or l3
+        # l1 if verts 2 and 3, l2 if verts 1 and 3, l3 if verts 1 and 2
+        side_crossings = [(ID_verts[1] and ID_verts[2]),
+                            (ID_verts[0] and ID_verts[2]),
+                            (ID_verts[0] and ID_verts[1]) ]
+        # retrieve the face predicted by face_across_edge
+        predicted_face_obj = ico.face_across_edge(face_dict[origin_node],
+                                side_crossings,face_graph)
+
+        assert set(predicted_face_obj)==set(destination_node)
+
+
+
+
+
+
+
+

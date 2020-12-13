@@ -78,6 +78,12 @@ def ico_MAMH(H,max_steps,step_size,**kwargs):
 
 	# at each time step
 	for t in time_span:
+		## let's se how we move
+		print('current x: in face? ',
+			ico.check_if_point_in_face(x.euclidean_coors,x.face_obj))
+		x.face_obj.plot_in_face(x.face_coors,in_chart_coors=True)
+
+
 		# suggest a candidate next sample
 		# (we require this update rule be symmetric: p(x|y)=p(y|x))
 		x_cand_face_coors = icosehedron_langevin(x,H,step_size)
@@ -118,6 +124,9 @@ def ico_MAMH(H,max_steps,step_size,**kwargs):
 
 			print('     coors in new face',x_last.face_coors)
 			x.face_obj.plot_in_face(x.face_coors,in_chart_coors=True)
+
+			# assert we're in our new face
+			assert np.all(ico.check_if_point_in_face(x.euclidean_coors,x.face_obj))
 		# if we reject the candidate, x stays in its possition
 		trajectory.append(x)
 

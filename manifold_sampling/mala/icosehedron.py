@@ -116,7 +116,7 @@ class ambient_face:
         # faces' circumcircle
         self.circumcircle_radius = np.linalg.norm(v_1.p-self.ctd_coors,ord=2)
 #        self.chart_radius = 2*self.circumcircle_radius
-        self.chart_radius = self.circumcircle_radius
+        self.chart_radius = 2*self.circumcircle_radius
         self.sphere_radius = np.linalg.norm(self.v_1.p)
         self.sphere_rad_sqr = self.sphere_radius**2
 
@@ -205,8 +205,7 @@ def check_if_point_in_face(p,face,**kwargs):
         # If on same hemisphere, check whether its projection lies within chart 
         # radius
         p_prime = euclidean2chart(p,face)
-#    return [(np.matmul(A,p_prime) > -face.chart_radius/4) 
-    return [(np.matmul(A,p_prime) > -face.circumcircle_radius/2) 
+    return [np.sum((np.matmul(A,p_prime)) > -face.circumcircle_radius/2) 
         for A in [A_1,A_2,A_3]]
 
 # PLANE PROJECTION -------------------------------------------------------------
