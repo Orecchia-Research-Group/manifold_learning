@@ -115,8 +115,10 @@ class ambient_face:
         # assume the radius of our chart is twice as big as that of the 
         # faces' circumcircle
         self.circumcircle_radius = np.linalg.norm(v_1.p-self.ctd_coors,ord=2)
-        self.chart_radius = 2*self.circumcircle_radius
+#        self.chart_radius = 2*self.circumcircle_radius
+        self.chart_radius = self.circumcircle_radius
         self.sphere_radius = np.linalg.norm(self.v_1.p)
+        self.sphere_rad_sqr = self.sphere_radius**2
 
         # we choose our basis vectors canonically so that b_1 points from the
         # centroid to v_1, and b_2 is parallel to the line from v_3 to v_2.
@@ -203,7 +205,8 @@ def check_if_point_in_face(p,face,**kwargs):
         # If on same hemisphere, check whether its projection lies within chart 
         # radius
         p_prime = euclidean2chart(p,face)
-    return [(np.matmul(A,p_prime) > -face.chart_radius/4) 
+#    return [(np.matmul(A,p_prime) > -face.chart_radius/4) 
+    return [(np.matmul(A,p_prime) > -face.circumcircle_radius/2) 
         for A in [A_1,A_2,A_3]]
 
 # PLANE PROJECTION -------------------------------------------------------------
@@ -264,9 +267,11 @@ def chart2euclidean(x,face):
     # our x- and y-coors, and then assumes a z-coordinate of 1 or -1 depending
     # on handedness
     if righthand_face(face):
-        x_augmented = np.array([x[0],x[1],face.sphere_radius])
+        #x_augmented = np.array([x[0],x[1],face.sphere_radius])
+        x_augmented = np.array([x[0], x[1], np.sqrt(face.sphere_rad_sqr - x.dot(x))])
     else:
-        x_augmented = np.array([x[0],x[1],-face.sphere_radius])
+        #x_augmented = np.array([x[0],x[1],-face.sphere_radius])
+        x_augmented = np.array([x[0], x[1], -np.sqrt(face.sphere_rad_sqr - x.dot(x))])
     return np.matmul(np.linalg.inv(R),x_augmented)
 
 # GRAPH REPRESENTATION ---------------------------------------------------------
@@ -375,7 +380,10 @@ def face_across_edge(face,side_crossings,face_graph):
     True in side_crossings. This method could be made faster by only searching
     faces adjacent to the original face in face_graph
     """
-    assert np.sum(side_crossings)==1
+    try:
+        assert np.sum(side_crossings)==1
+    except AssertionError:
+        assert AssertionError("np.sum(side_crossings): "+str(np.sum(side_crossings)))
     # first, ID the edge we're traversing using a pair of vertices
     face_verts = (face.v_1.name,face.v_2.name,face.v_3.name)
     vertex_pairs = [(face_verts[1],face_verts[2]),(face_verts[0],face_verts[2]),
@@ -396,10 +404,26 @@ def map_pt_btwn_charts(pt,origin_face,dest_face):
     """
     try:
         assert check_if_point_in_chart(pt,origin_face,in_chart_coors=True)
-    except:
-        print(pt)
-    assert np.all(check_if_point_in_face(origin_face.chart2euclidean(pt),
-        dest_face,in_chart_coors=False))
+    except AssertionError:
+        raise AssertionError(str(pt))
+    try:
+        assert np.all(check_if_point_in_face(origin_face.chart2euclidean(pt),
+            dest_face,in_chart_coors=False))
+    except AssertionError:
+        fig = plt.figure()
+        ax = fig.add_subplot(projection="3d")
+        cand_pt = origin_face.chart2euclidean(pt)
+        ax.plot(cand_pt[0], cand_pt[1], cand_pt[2], "k.")
+        for face, col in zip([origin_face, dest_face], ["b", "r"]):
+            for att in ["v_1", "v_2", "v_3"]:
+                v_pt = getattr(face, att).p
+                ax.plot(v_pt[0], v_pt[1], v_pt[2], col+".")
+        pt_str = str(origin_face.chart2euclidean(pt))
+        origin_str = "\n".join([str(origin_face.v_1.p), str(origin_face.v_2.p), str(origin_face.v_3.p)])
+        dest_str = "\n".join([str(dest_face.v_1.p), str(dest_face.v_2.p), str(dest_face.v_3.p)])
+#        origin_str = str(origin_face.ctd_coors)+"\n"+str(origin_face.basis_1)+"\n"+str(origin_face.basis_2)
+#        dest_str = str(dest_face.ctd_coors)+"\n"+str(dest_face.basis_1)+"\n"+str(dest_face.basis_2)
+        raise AssertionError("pt: "+pt_str+"\n\n\norigin_face: "+origin_str+"\n\n\ndest_face: "+dest_str)
 
     # first, get Euclidean coordinates of our point
     euc_pt = chart2euclidean(pt,origin_face)
