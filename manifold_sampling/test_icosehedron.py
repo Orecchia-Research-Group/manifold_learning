@@ -46,6 +46,13 @@ def test_chart_maps():
         for point in face_obj.list_vert_coors():
             centered_pt = 0.1*(face_obj.ctd_coors - point) + 0.9*point
             assert np.all(ico.check_if_point_in_face(centered_pt,face_obj))
+
+        # make sure we preserve our point when movie back and forth
+        test_pt_chart = np.random.normal(loc=1,scale=0.1,size=2)
+        test_pt_euclidean = face_obj.chart2euclidean(test_pt_chart)
+        assert np.all(np.isclose(test_pt_chart,
+                face_obj.euclidean2chart(test_pt_euclidean)))
+
             
 def test_transitions():
     face_graph,vertex_graph,face_dict = ico.generate_icosahedron()
@@ -71,6 +78,7 @@ def test_transitions():
                                 side_crossings,face_graph)
 
         assert set(predicted_face_obj)==set(destination_node)
+
 
 
 

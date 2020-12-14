@@ -27,11 +27,17 @@ G_2 = np.diag([-1,1,1])
 A_1 = np.array([[1,0],
                [0,0]])
 
-A_2 = np.array([[np.cos(2*np.pi/3),-np.sin(2*np.pi/3)],
+A_2 = np.array([[-0.5,0.5*np.sqrt(3)],
+                [0,0]])
+
+A_3 = np.array([[-0.5,-0.5*np.sqrt(3)],
+                [0,0]])
+
+"""A_2 = np.array([[np.cos(2*np.pi/3),-np.sin(2*np.pi/3)],
                [np.sin(2*np.pi/3),np.cos(2*np.pi/3)]])
 
 A_3 = np.array([[np.cos(2*np.pi/3),np.sin(2*np.pi/3)],
-               [-np.sin(2*np.pi/3),np.cos(2*np.pi/3)]])
+               [-np.sin(2*np.pi/3),np.cos(2*np.pi/3)]])"""
 
 # VERTEX GENERATING GROUP ------------------------------------------------------
 
@@ -123,7 +129,7 @@ class ambient_face:
         # we choose our basis vectors canonically so that b_1 points from the
         # centroid to v_1, and b_2 is parallel to the line from v_3 to v_2.
         self.basis_1 = mala.utils.normalize(self.v_1.p-self.ctd_coors)
-        self.basis_2 = mala.utils.normalize(self.v_3.p - self.v_2.p)
+        self.basis_2 = mala.utils.normalize(self.v_2.p - self.v_3.p)
 
     def coor_shift_by_g(self,g):
         return [np.matmul(g.mat,self.v_1.p),np.matmul(g.mat,self.v_2.p),
@@ -169,8 +175,8 @@ class ambient_face:
         for x,y in [[u,v],[v,w],[u,w]]:
             plt.plot([x[0],y[0]],[x[1],y[1]],color='grey')
         # scatter and label points
-        for idx,x in enumerate([u,v,w]):
-            plt.plot([x[0]],[x[1]],'o',label=idx)
+        for x in transformed_face.list_vert_objs():
+            plt.plot([x.p[0]],[x.p[1]],'o',label=x.name)
         # scatter our point
         plt.plot([transformed_point[0]],[transformed_point[1]],'o',label='point')
         plt.legend()
@@ -205,7 +211,7 @@ def check_if_point_in_face(p,face,**kwargs):
         # If on same hemisphere, check whether its projection lies within chart 
         # radius
         p_prime = euclidean2chart(p,face)
-    return [np.sum((np.matmul(A,p_prime)) > -face.circumcircle_radius/2) 
+    return [np.sum(np.matmul(A,p_prime)) > -face.circumcircle_radius/2 
         for A in [A_1,A_2,A_3]]
 
 # PLANE PROJECTION -------------------------------------------------------------
@@ -409,7 +415,7 @@ def map_pt_btwn_charts(pt,origin_face,dest_face):
         assert np.all(check_if_point_in_face(origin_face.chart2euclidean(pt),
             dest_face,in_chart_coors=False))
     except AssertionError:
-        fig = plt.figure()
+        """fig = plt.figure()
         ax = fig.add_subplot(projection="3d")
         cand_pt = origin_face.chart2euclidean(pt)
         ax.plot(cand_pt[0], cand_pt[1], cand_pt[2], "k.")
@@ -422,7 +428,7 @@ def map_pt_btwn_charts(pt,origin_face,dest_face):
         dest_str = "\n".join([str(dest_face.v_1.p), str(dest_face.v_2.p), str(dest_face.v_3.p)])
 #        origin_str = str(origin_face.ctd_coors)+"\n"+str(origin_face.basis_1)+"\n"+str(origin_face.basis_2)
 #        dest_str = str(dest_face.ctd_coors)+"\n"+str(dest_face.basis_1)+"\n"+str(dest_face.basis_2)
-        raise AssertionError("pt: "+pt_str+"\n\n\norigin_face: "+origin_str+"\n\n\ndest_face: "+dest_str)
+        raise AssertionError("pt: "+pt_str+"\n\n\norigin_face: "+origin_str+"\n\n\ndest_face: "+dest_str)"""
 
     # first, get Euclidean coordinates of our point
     euc_pt = chart2euclidean(pt,origin_face)
