@@ -99,48 +99,56 @@ def ico_MAMH(H,max_steps,step_size,**kwargs):
 			# keep a copy of x around to compare for next step
 			x_last = x
 			x = x_cand
-		# check if we've left our face. note: the check uses euclidean coors
-		if not np.all(ico.check_if_point_in_face(x.euclidean_coors,x.face_obj)):
-			print('left our face')
+			# check if we've left our face. note: the check uses euclidean coors
+			if not np.all(ico.check_if_point_in_face(x.euclidean_coors,x.face_obj)):
+				print('left our face')
 
-			print('     previous coors',x_last.face_coors)
-			x_last.face_obj.plot_in_face(x_last.face_coors,in_chart_coors=True)
+				print('     previous coors',x_last.face_coors)
+				x_last.face_obj.plot_in_face(x_last.face_coors,in_chart_coors=True)
 
-			print('     next coors in this face',x.face_coors)
-			x.face_obj.plot_in_face(x.face_coors,in_chart_coors=True)
+				print('     next coors in this face',x.face_coors)
+				x.face_obj.plot_in_face(x.face_coors,in_chart_coors=True)
 
-			# find the next face we'll move to
-			side_crossings = [not v for v in ico.check_if_point_in_face(x.euclidean_coors,x.face_obj)]
-			print('Side crossings ',side_crossings)
-			next_face_node = ico.face_across_edge(x.face_obj,side_crossings,
-				face_graph)
-			next_face_obj = face_dict[next_face_node]
+				# find the next face we'll move to
+				side_crossings = [not v for v in ico.check_if_point_in_face(x.euclidean_coors,x.face_obj)]
+				print('Side crossings ',side_crossings)
+				next_face_node = ico.face_across_edge(x.face_obj,side_crossings,
+					face_graph)
+				next_face_obj = face_dict[next_face_node]
 
-			print('     next coors in next face:')
-			next_face_obj.plot_in_face(x.euclidean_coors,in_chart_coors=False)
+				print('     next coors in next face:')
+				next_face_obj.plot_in_face(x.euclidean_coors,in_chart_coors=False)
 
-			# assert we're in our new face
-			try:
-				assert np.all(ico.check_if_point_in_face(x.euclidean_coors,next_face_obj))
-			except:
-				# try all the neighbors of our face and see if our point lies in one
-				print('checking neighboring faces.')
-				for adj_face_node in face_graph.neighbors(x.face_node):
-					print(ico.check_if_point_in_face(x.euclidean_coors,face_dict[adj_face_node]))
+				# assert we're in our new face
+				try:
+					assert np.all(ico.check_if_point_in_face(x.euclidean_coors,next_face_obj))
+				except:
+					# try all the neighbors of our face and see if our point lies in one
+					print('checking neighboring faces.')
+					for adj_face_node in face_graph.neighbors(x.face_node):
+						print(ico.check_if_point_in_face(x.euclidean_coors,face_dict[adj_face_node]))
+					assert AssertionError("We done goofed")
 
-			# get coordinates of x in the chart of our next face
-			next_chart_coors = next_face_obj.euclidean2chart(x.euclidean_coors)
+				# get coordinates of x in the chart of our next face
+				next_chart_coors = next_face_obj.euclidean2chart(x.euclidean_coors)
 
-			# update x
-			x = ico_point(chart_coors=next_chart_coors,
-				face_node =next_face_node,
-				face_map=face_dict)
+				# update x
+				x = ico_point(chart_coors=next_chart_coors,
+					face_node =next_face_node,
+					face_map=face_dict)
 
-			print('     coors in new face',x_last.face_coors)
-			x.face_obj.plot_in_face(x.face_coors,in_chart_coors=True)
+				print('     coors in new face',x_last.face_coors)
+				x.face_obj.plot_in_face(x.face_coors,in_chart_coors=True)
 
-			# assert we're in our new face
-			assert np.all(ico.check_if_point_in_face(x.euclidean_coors,x.face_obj))
+				# assert we're in our new face
+				try:
+					assert np.all(ico.check_if_point_in_face(x.euclidean_coors,x.face_obj))
+				except AssertionError:
+					print('checking neighboring faces.')
+					for adj_face_node in face_graph.neighbors(x.face_node):
+						print(ico.check_if_point_in_face(x.euclidean_coors,face_dict[adj_face_node]))
+					assert AssertionError("We done goofed")
+
 		# if we reject the candidate, x stays in its possition
 		trajectory.append(x)
 
