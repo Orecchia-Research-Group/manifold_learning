@@ -13,9 +13,9 @@ radii_list = []
 eigval_list = []
 eigvec_list = []
 for j in indices:
-	radii_list.append(np.load("radii_"+str(j)+".npy"))
-	eigval_list.append(np.load("eigvals_"+str(j)+".npy"))
-	eigvecs = np.load("eigvecs+"+str(j)+".npy")
+	radii_list.append(np.load("sparse_intermediates/radii_"+str(j)+".npy"))
+	eigval_list.append(np.load("sparse_intermediates/eigvals_"+str(j)+".npy"))
+	eigvecs = np.load("sparse_intermediates/eigvecs+"+str(j)+".npy")
 	eigvec_list.append(np.swapaxes(eigvecs, 1, 2))
 
 Rminspre = [35.5, 32,   37.5, 36,   35,   37.5, 37.5, 33.5, 38,   38, 37,   36, 42, 37, 40, 38, 38]
@@ -111,4 +111,4 @@ for name, mat in zip(names, [mat_grass, mat_mean, mat_max, mat_min]):
 #	ax.set_xticklabels(["goober"]+[str(ind) for ind in indices])
 #	ax.set_yticklabels(["goober"]+[str(ind) for ind in indices])
 	fig.colorbar(handle)
-	fig.savefig(name + ".pdf")
+	fig.savefig("vanilla_jordan/" + name + ".pdf")

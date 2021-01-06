@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics.pairwise import euclidean_distances as euclid
 import scanpy as sc
+from tqdm import tqdm
 
 def get_sct_sparse():
 	ILC = sc.read("data/sct.h5ad")
@@ -11,6 +12,16 @@ def get_sct_sparse():
 def get_sct_var_sparse():
 	ILC = sc.read("data/sct_variable.h5ad")
 	return ILC.layers["norm_data"]
+
+def get_sct_var_small_expression_inds(threshold=0.8):
+	sparse_var = get_sct_var_sparse()
+	N, d = sparse_var.shape
+	signif_inds = []
+	for j in tqdm(range(d)):
+		sparse_slice = sparse_var[:, j]
+		if (sparse_slice.nnz / N) <= threshold:
+			signif_inds.append(j)
+	return signif_inds
 
 def get_sct_var_scale():
 	ILC = sc.read("data/sct_variable.h5ad")
@@ -34,19 +45,19 @@ def get_Diff_coord_var():
 
 def get_draw_graph_fa():
 	ILC = sc.read("data/sct.h5ad")
-	return ILC["X_draw_graph_fa"]
+	return ILC.obsm["X_draw_graph_fa"]
 
 def get_draw_graph_fa_var():
 	ILC_var = sc.read("data/sct_variable.h5ad")
-	return ILC_var["X_draw_graph_fa"]
+	return ILC_var.obsm["X_draw_graph_fa"]
 
 def get_UMAP():
 	ILC = sc.read("data/sct.h5ad")
-	return ILC["umap_cell_embeddings"]
+	return ILC.obsm["umap_cell_embeddings"]
 
 def get_UMAP_var():
 	ILC_var = sc.read("data/sct_variable.h5ad")
-	return ILC_var["umap_cell_embeddings"]
+	return ILC_var.obsm["umap_cell_embeddings"]
 
 def get_Gene_list():
 	try:
@@ -122,8 +133,6 @@ def get_dist_vec_scale(ind):
 
 	except FileNotFoundError:
 		print("Generating dist_vec_scale_"+str(ind)+"...")
-		#ILCs_reads, _, _ = get_cells_of_interest()
-		#ILCs = np.array(ILCs_reads)
 		ILCs = get_sct_var_scale()
 		ILCs_centered = ILCs - ILCs[ind, :]
 		dist_vec = np.linalg.norm(ILCs_centered, axis=1)
