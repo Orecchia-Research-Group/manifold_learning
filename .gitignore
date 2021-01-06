@@ -4,7 +4,12 @@ data/__pycache__/*
 mls/__pycache__/*
 tests/__pycache__/*
 kyle/.ipynb_checkpoints/*
+manifold_sampling/.ipynb_checkpoints/*
 manifold_utils/__pycache__/*
+manifold_sampling/mala/.ipynb_checkpoints/*
+manifold_sampling/mala/__pycache__/*
+manifold_utils/__pycache__/*
+manifold_sampling/__pycache__/*
 tests/.ipynb_checkpoints/*
 .ipynb_checkpoints/*
 *.png
