@@ -1,12 +1,12 @@
 from manifold_utils.mSVD import hypersphere
-from combined_mls_pca import mls_pca 
-from fit_quad_diff import manifold_regression as mr
+#from combined_mls_pca import mls_pca 
+from manifold_utils.fit_quad_diff import manifold_regression as mr
 import numpy as np
 import matplotlib.pyplot as plt
 
 ## Sample within unit circle R^2
 length = np.sqrt(np.random.uniform(0,1,1000))
-print(length)
+#print(length)
 
 theta = np.pi * np.random.uniform(0,2,1000)
 #print(theta)

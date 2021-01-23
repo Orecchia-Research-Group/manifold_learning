@@ -17,7 +17,3 @@ def manifold_regression(V,V_perp,points,center):
     #print(xi.shape)
     #print(yi.shape)
     return(lreg.coef_)
-
-    
-    
-    
