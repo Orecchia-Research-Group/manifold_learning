@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.metrics.pairwise import euclidean_distance as euclid
+from sklearn.metrics.pairwise import euclidean_distances as euclid
 
 def get_dist_mat(points):
 	"""
@@ -26,7 +26,8 @@ def sort_distances_per_point(dist_mat):
 	rows_to_return = []
 	for j in range(n):
 		rows_to_return.append(np.sort(dist_mat[j, :]))
-	distances_per_point = np.stack(rows_to_return, axis=0)
+	#distances_per_point = np.stack(rows_to_return, axis=0)
+	distances_per_point = np.vstack(rows_to_return)
 	return distances_per_point[1:, :]
 
 def indices_for_density_filtration(distances_per_point, k, p):

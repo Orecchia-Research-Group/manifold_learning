@@ -1,7 +1,7 @@
 import numpy as np
 import gudhi
 
-def choose_landmarks(points, dist_mat, p):
+def choose_landmarks(dist_mat, p):
 	"""
 	Randomly choose landmark points for a witness complex
 	from a matrix of points. The number of landmark points
@@ -9,8 +9,6 @@ def choose_landmarks(points, dist_mat, p):
 	points. Returns an L x (n-L) distance matrix.
 
 	inputs:
-	points:	n x d matrix of points, where n is the number of
-		points and d is the dimension of the data
 	dist_mat: n x n matrix of pointwise distances
 	p:	float between 0 and 1; the number of landmark
 		points chosen is equal to floor(p * n)
@@ -22,7 +20,7 @@ def choose_landmarks(points, dist_mat, p):
 		distances from each landmark to each potential
 		witness
 	"""
-	n = points.shape[0]
+	n = dist_mat.shape[0]
 	n_landmarks = int(np.floor(p * n))
 
 	# Keep Boolean array denoting whether or not point i is a
@@ -33,7 +31,7 @@ def choose_landmarks(points, dist_mat, p):
 
 	# Slice witness_dist_mat from dist_mat
 	keep_distance = np.outer(landmarks, ~landmarks)
-	witness_dist_mat = dist_mat[keep_distance]
+	witness_dist_mat = np.reshape(dist_mat[keep_distance], (n_landmarks, n-n_landmarks))
 
 	return indices, witness_dist_mat
 
@@ -79,4 +77,4 @@ def complex_from_witness_dist_mat(witness_dist_mat, strong=False, max_alpha_squa
 	# Create witness complex
 	complex = Complex(landmark_table)
 
-	return complex.create_simplex_tree(max_square_alpha)
+	return complex.create_simplex_tree(max_alpha_square)
