@@ -26,7 +26,6 @@ def sort_distances_per_point(dist_mat):
 	rows_to_return = []
 	for j in range(n):
 		rows_to_return.append(np.sort(dist_mat[j, :]))
-	#distances_per_point = np.stack(rows_to_return, axis=0)
 	distances_per_point = np.vstack(rows_to_return)
 	return distances_per_point[1:, :]
 
