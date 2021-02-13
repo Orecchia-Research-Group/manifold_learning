@@ -1,4 +1,5 @@
 using Combinatorics
+using Eirene
 
 function weak_witness_complex_simplices(witness_dist_mat, max_deg::Int64)
 	# n is the number of landmarks
@@ -61,6 +62,11 @@ function array_lt(array1::Array{Int64, 1}, array2::Array{Int64, 1})
 end
 
 function simplices_to_Eirene_complex(simplices::Dict{Int64, Set}, max_deg::Int64)
+	# store dimension of cell i
+	dv = Array{Int64, 1}()
+	# store total number of cells of dimension (i-1)
+	ev = Array{Int64, 1}()
+
 	# Start by sorting j-simplices for k in 0:max_deg
 	sorted_simplices = Dict{Int64, Array}()
 	for j in 0:max_deg
@@ -75,7 +81,10 @@ function simplices_to_Eirene_complex(simplices::Dict{Int64, Set}, max_deg::Int64
 	# Put all simplices into single array
 	simplex_array = Array{Union{Int64, Tuple}, 1}()
 	for j in 0:max_deg
-		for item in sorted_simplices[j]
+		temp_sorted_list = sorted_simplices[j]
+		push!(ev, length(temp_sorted_list))
+		for item in temp_sorted_list
+			push!(dv, j)
 			push!(simplex_array, item)
 		end
 	end
@@ -118,7 +127,16 @@ function simplices_to_Eirene_complex(simplices::Dict{Int64, Set}, max_deg::Int64
 	rv = S.rowval
 	cp = S.colptr
 
-	return D
+	# Get dp per Eirene documentation
+	dp = Array{Int64, 1}([1])
+	for j in 1:(max_deg-1)
+		push!(dp, dp[j]+ev[j])
+	end
+
+	# Form Eirene complex
+	C = eirene(rv=rv, cp=cp, fv=fv, dp=dp)
+
+	return C
 end
 
 arr = [1 2 3;
@@ -129,6 +147,6 @@ arr = [1 2 3;
 max_deg = 3
 simplices = weak_witness_complex_simplices(arr, max_deg)
 
-D = simplices_to_Eirene_complex(simplices, max_deg)
+C = simplices_to_Eirene_complex(simplices, max_deg)
 
-print(D)
+print(fieldnames(C))
