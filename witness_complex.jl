@@ -1,4 +1,4 @@
-using HDF5
+using NPZ
 using Combinatorics
 
 function weak_witness_complex_simplices(witness_dist_mat, max_deg::Int64)
@@ -43,22 +43,26 @@ function weak_witness_complex_simplices(witness_dist_mat, max_deg::Int64)
 	return simplices
 end
 
-function simplices_to_HDF5(simplices::Dict{Int64, Set}, max_deg::Int64, filename::String)
-	touch(filename)
-	fid = h5open(filename, "w")
+function simplices_to_npy(simplices::Dict{Int64, Set}, max_deg::Int64, file_prefix::String)
 	for j in 0:max_deg
-		write(fid, string(j), string(collect(simplices[j])))
+		to_transcribe = collect(simplices[j])
+		len_transcription = length(to_transcribe)
+		to_write = zeros(Int64, (len_transcription, j+1))
+		for k in 1:len_transcription
+			for kk in 1:(j+1)
+				to_write[k, kk] = to_transcribe[k][kk]
+			end
+		end
+		npzwrite("data/sample_weak_witness_"*string(j)*".npy", to_write)
 	end
-	close(fid)
 end
 
-#arr = h5read("data/sample_witness_slice.h5", "witness_slice")
-arr = transpose(h5read("data/sample_witness_slice.h5", "witness_slice"))
+arr = npzread("data/sample_witness_slice.npy")
 
 #arr = [1 2 3 4 5;
 #	0.5 1.5 2.5 3.5 4.5]
 
-max_deg = 3
+max_deg = 2
 @time simplices = weak_witness_complex_simplices(arr, max_deg)
 
-simplices_to_HDF5(simplices, max_deg, "data/sample_weak_witness.h5")
+simplices_to_npy(simplices, max_deg, "data/sample_weak_witness")
