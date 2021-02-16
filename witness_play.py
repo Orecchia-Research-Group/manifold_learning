@@ -19,7 +19,7 @@ distances_per_point = np.load("data/ilc_scale_data_distances_per_point.npy")
 print("Timing computation of density filtrations...")
 density_indices = dict()
 density_filtrations = dict()
-ks = [10, 100, 1000, 10000]
+ks = [1, 5, 10, 50, 100, 500, 1000, 5000, 10000]
 ps = [0.01, 0.05, 0.1, 0.2]
 for k in ks:
 	for p in ps:
@@ -49,12 +49,16 @@ print("Printing numbers of landmarks...")
 for k in ks:
 	for p in ps:
 		for pp in pps:
-			toople = (k, p, pp)
-			print(str(toople)+": "+str(len(landmark_indices[toople])))
-			if toople == (10000, 0.2, 0.05):
+			# Number of landmarks completely determined by p, pp
+			tiny_toople = (p, pp)
+			if tiny_toople == (0.2, 0.05):
+				toople = (k, p, pp)
+				print("\tk = "+str(k))
+				start = time()
 				landmark_inds = landmark_indices[toople]
 				dense_inds = density_indices[(k, p)]
 				true_inds = [dense_inds[ind] for ind in landmark_inds]
 				to_save = np.vstack([sct_sparse[ind, :] for ind in true_inds])
-				np.save("data/sample_landmarks.npy", to_save)
-				np.save("data/sample_landmark_indices.npy", true_inds)
+				np.save("data/sample_landmarks_kis"+str(k)+".npy", to_save)
+				np.save("data/sample_landmark_indices_kis"+str(k)+".npy", true_inds)
+				print("\t"+str(time() - start)+" seconds\n")

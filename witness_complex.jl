@@ -53,16 +53,17 @@ function simplices_to_npy(simplices::Dict{Int64, Set}, max_deg::Int64, file_pref
 				to_write[k, kk] = to_transcribe[k][kk]
 			end
 		end
-		npzwrite("data/sample_weak_witness_"*string(j)*".npy", to_write)
+		npzwrite(file_prefix*"_"*string(j)*".npy", to_write)
 	end
 end
 
-arr = npzread("data/sample_witness_slice.npy")
+ks = (1, 5, 10, 50, 100, 500, 1000, 5000, 10000)
 
-#arr = [1 2 3 4 5;
-#	0.5 1.5 2.5 3.5 4.5]
+for k in ks
+	arr = npzread("data/sample_witness_slice_kis"*string(k)*".npy")
 
-max_deg = 2
-@time simplices = weak_witness_complex_simplices(arr, max_deg)
+	max_deg = 2
+	@time simplices = weak_witness_complex_simplices(arr, max_deg)
 
-simplices_to_npy(simplices, max_deg, "data/sample_weak_witness")
+	simplices_to_npy(simplices, max_deg, "data/sample_weak_witness_kis"*string(k))
+end
