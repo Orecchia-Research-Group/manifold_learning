@@ -1,12 +1,6 @@
 using HDF5
 using Combinatorics
 
-function union_iterable(iter_obj::Array)
-	return_obj = Set{Tuple{Vararg{Int64}}}()
-	union!(return_obj, iter_obj)
-	return Tuple(return_obj)
-end
-
 function weak_witness_complex_simplices(witness_dist_mat, max_deg::Int64)
 	# n is the number of landmarks
 	# N is the number of non-landmark points
@@ -29,22 +23,18 @@ function weak_witness_complex_simplices(witness_dist_mat, max_deg::Int64)
 
 	# Insert simplices of degree 2 up to max-degree
 	for j in 2:max_deg
-		# Initialize j-simplices
 		new_simplices = Set{Tuple}()
-		# Get j-1 simplices
-		facets = collect(simplices[j-1])
-		# Iterate over all combinations of (j+1) facets
-		for combo in combinations(facets, j+1)
-			# Check that all facets share a facet
+		facets = simplices[j-1]
+		for combo in combinations(1:n, j+1)
 			cond = true
-			for pair in combinations(combo, 2)
-				if length(intersect(pair[1], pair[2])) != (j-1)
+			for facet in combinations(combo, j)
+				if !in(facet, facets)
 					cond = false
+					break
 				end
 			end
 			if cond
-				onion = union_iterable(combo)
-				push!(new_simplices, onion)
+				push!(new_simplices, combo)
 			end
 		end
 		simplices[j] = new_simplices
@@ -62,13 +52,13 @@ function simplices_to_HDF5(simplices::Dict{Int64, Set}, max_deg::Int64, filename
 	close(fid)
 end
 
-arr = h5read("data/sample_witness_slice.h5", "witness_slice")
+#arr = h5read("data/sample_witness_slice.h5", "witness_slice")
+arr = transpose(h5read("data/sample_witness_slice.h5", "witness_slice"))
 
 #arr = [1 2 3 4 5;
 #	0.5 1.5 2.5 3.5 4.5]
 
-#max_deg = 3
-max_deg = 2
+max_deg = 3
 @time simplices = weak_witness_complex_simplices(arr, max_deg)
 
 simplices_to_HDF5(simplices, max_deg, "data/sample_weak_witness.h5")
