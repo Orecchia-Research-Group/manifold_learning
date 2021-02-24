@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import random
-import matplotlib.pyplot as plt
 from scipy.sparse.linalg import svds, LinearOperator
 from scipy.sparse import vstack
 import scipy
@@ -151,7 +150,7 @@ def eps_projection(vectors,eigvecs,center):
     projection=np.dot(newvecs,eigvecs)
     return(projection)
 
-def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01):
+def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01, Rend=None):
     """
     This function iterates through specidic radii values and performs PCA at the given radius. The PCA values (eigenvalues, eigenvectors) are then saved and returned in a multidimensional list.
     Also, this function requires the numpy, random, and scipy packages for proper use.
@@ -164,6 +163,9 @@ def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01):
     N, d = cloud.shape # Get number N of points and dimension d of ambient space
     assert dist_mat.shape == (N, N) # Assert agreement between cloud.shape and dist_mat.shape
 
+    if not Rend:
+        Rend = np.max(dist_mat)
+
     dist_vec = dist_mat[center_ind, :]
     sorted_vec = np.sort(dist_vec)
     radii = [*np.arange(sorted_vec[5], sorted_vec[-1] + radint, radint)]
@@ -172,7 +174,8 @@ def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01):
 
     eigval_list = []
     eigvec_list = []
-    for rad, cands in two_index_iterator(radii, indices, key=lambda x: dist_vec[x]):
+    num_pts_list = []
+    for rad, cands in tqdm(two_index_iterator(radii, indices, key=lambda x: dist_vec[x])):
         if len(cands) > 0:
             new_cands = np.stack([cloud[cand, :] for cand in cands], axis=0)
             try:
@@ -183,11 +186,13 @@ def eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01):
             eigvals, eigvecs = np.linalg.eigh(cov_X)
             eigval_list.append(eigvals)
             eigvec_list.append(eigvecs)
+            num_pts_list.append(len(points))
         else:
             eigval_list.append(eigval_list[-1])
             eigvec_list.append(eigvec_list[-1])
+            num_pts_list.append(num_pts_list[-1])
 
-    return radii, eigval_list, eigvec_list
+    return radii, eigval_list, eigvec_list, num_pts_list
 
 def eigen_plot_numPoints(eigval_list, xaxis, xtype, cid):
     """
@@ -269,7 +274,7 @@ def eigen_calc_from_dist_mat_withNumPoints(cloud, dist_mat, center_ind, Rstart, 
                 radius_list.append(rad)
     return radius_list, numPoints_list, eigval_list, eigvec_list
 
-def rapid_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01, k=10, norm_diff=1e-6):
+def rapid_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01, k=10, norm_diff=1e-6, Rend=None):
     """
     This function iterates through specidic radii values and performs PCA at the given radius. The PCA values (eigenvalues, eigenvectors) are then saved and returned in a multidimensional list.
     Also, this function requires the numpy and random packages for proper use.
@@ -282,15 +287,20 @@ def rapid_eigen_calc_from_dist_mat(cloud, dist_mat, center_ind, radint = .01, k=
     N, d = cloud.shape # Get number N of points and dimension d of ambient space
     assert dist_mat.shape == (N, N) # Assert agreement between cloud.shape and dist_mat.shape
 
+    if not Rend:
+        Rend = np.max(dist_mat)
+
     dist_vec = dist_mat[center_ind, :]
     sorted_vec = np.sort(dist_vec)
-    radii = [*np.arange(sorted_vec[5], sorted_vec[-1] + radint, radint)]
+#    radii = [*np.arange(sorted_vec[5], sorted_vec[-1] + radint, radint)]
+    radii = [*np.arange(sorted_vec[5], Rend, radint)]
     indices = list(range(N))
     indices.sort(key=lambda x: dist_vec[x])
 
     eigval_list = []
     eigvec_list = []
-    for rad, cands in two_index_iterator(radii, indices, key=lambda x: dist_vec[x]):
+
+    for rad, cands in tqdm(two_index_iterator(radii, indices, key=lambda x: dist_vec[x])):
         if len(cands) > 0:
             new_cands = np.stack([cloud[cand, :] for cand in cands], axis=0)
             try:
