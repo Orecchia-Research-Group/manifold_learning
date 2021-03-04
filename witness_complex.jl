@@ -1,5 +1,6 @@
 using NPZ
 using Combinatorics
+using ProgressBars
 
 function weak_witness_complex_simplices(witness_dist_mat, max_deg::Int64)
 	# n is the number of landmarks
@@ -57,13 +58,21 @@ function simplices_to_npy(simplices::Dict{Int64, Set}, max_deg::Int64, file_pref
 	end
 end
 
-ks = (1, 5, 10, 50, 100, 500, 1000, 5000, 10000)
+# ks = (1, 5, 10, 50, 100, 500, 1000, 5000, 10000)
+ks = (5,)
+ps = (0.01, 0.05, 0.1, 0.2)
+pps = (0.05, 0.1, 0.2)
 
-for k in ks
-	arr = npzread("data/sample_witness_slice_kis"*string(k)*".npy")
+for p in ps
+	for pp in ProgressBar(pps)
+		for k in ks
+			toople = (k, p, pp)
+			arr = npzread("data/sample_witness_slice_kis"*string(toople)*".npy")
 
-	max_deg = 2
-	@time simplices = weak_witness_complex_simplices(arr, max_deg)
+			max_deg = 3
+			simplices = weak_witness_complex_simplices(arr, max_deg)
 
-	simplices_to_npy(simplices, max_deg, "data/sample_weak_witness_kis"*string(k))
+			simplices_to_npy(simplices, max_deg, "data/sample_weak_witness_kis"*string(toople))
+		end
+	end
 end
