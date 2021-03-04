@@ -58,9 +58,9 @@ function simplices_to_npy(simplices::Dict{Int64, Set}, max_deg::Int64, file_pref
 	end
 end
 
-ks = (1, 5, 10, 50, 100, 500, 1000, 5000, 10000)
-# ks = (5,)
-ps = (0.01, 0.05, 0.1, 0.2)
+#ks = (1, 5, 10, 50)
+ks = (5, )
+ps = (0.01, 0.05, 0.1, 0.2, 0.5, 0.1)
 pps = (0.05, 0.1, 0.2)
 
 for p in ps
@@ -69,7 +69,7 @@ for p in ps
 			toople = (k, p, pp)
 			arr = npzread("data/sample_witness_slice_kis"*string(toople)*".npy")
 
-			max_deg = 1
+			max_deg = 2
 			simplices = weak_witness_complex_simplices(arr, max_deg)
 
 			simplices_to_npy(simplices, max_deg, "data/sample_weak_witness_kis"*string(toople))

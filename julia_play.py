@@ -3,8 +3,9 @@ import ilc_data.ilc_loader as ILC
 import h5py
 from tqdm import tqdm
 
-ks = [1, 5, 10, 50, 100, 500, 1000, 5000, 10000]
-ps = [0.01, 0.05, 0.1, 0.2]
+#ks = [1, 5, 10, 50]
+ks = [5]
+ps = [0.01, 0.05, 0.1, 0.2, 0.5, 1.0]
 pps = [0.05, 0.1, 0.2]
 
 for k in tqdm(ks):
