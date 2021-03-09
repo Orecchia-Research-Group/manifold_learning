@@ -76,4 +76,5 @@ rips = Rips()
 diagrams = rips.fit_transform(np_data, distance_matrix=False, metric="euclidean")
 print("Time elapsed: "+str(time() - start))
 
-pickle.dump(diagrams, "ripser_output.pkl")
+with open("ripser_output.pkl", "wb") as file:
+	pickle.dump(diagrams, file)
