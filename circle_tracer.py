@@ -20,6 +20,7 @@ import scanpy as sc
 from ripser import Rips
 from ripser import ripser
 from time import time
+import pickle
 
 ILC_var = sc.read("data/sct_variable.h5ad")
 
@@ -75,4 +76,4 @@ rips = Rips()
 diagrams = rips.fit_transform(np_data, distance_matrix=False, metric="euclidean")
 print("Time elapsed: "+str(time() - start))
 
-print(type(diagrams))
+pickle.dump(diagrams, "ripser_output.pkl")
