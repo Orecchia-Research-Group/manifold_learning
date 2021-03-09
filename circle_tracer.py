@@ -73,7 +73,7 @@ topic_cells = np.array(pd_data.loc[subset])
 # Do ripster shenanigans
 start = time()
 rips = Rips()
-diagrams = rips.fit_transform(np_data, distance_matrix=False, metric="euclidean")
+diagrams = rips.fit_transform(np_data, distance_matrix=False, metric="euclidean", do_cocycles=True)
 print("Time elapsed: "+str(time() - start))
 
 with open("ripser_output.pkl", "wb") as file:
