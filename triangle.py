@@ -65,6 +65,7 @@ class icosahedron:
         positions = nx.get_node_attributes(i_graph, 'pos')
         node_list = list(i_graph.nodes).copy()
 
+        # Mechanism for eliminating repeated nodes
         for node in node_list:
             position = positions[count]
             if position in seen_pos:
@@ -73,15 +74,13 @@ class icosahedron:
                 seen_pos.append(position)
                 merged_nodes[position] = node
             count += 1
-            
-        print(i_graph.nodes())
+        
         inv_positions = {v: k for k, v in merged_nodes.items()}
         nx.set_node_attributes(i_graph, inv_positions, 'pos')
         positions2 = nx.get_node_attributes(i_graph, 'pos')
-        print(positions2)
         self.graph = i_graph
         
-
+# Merges repeated nodes
 def merge(G, n1, n2):
     pre = G.neighbors(n1)
     suc = G.neighbors(n2)
