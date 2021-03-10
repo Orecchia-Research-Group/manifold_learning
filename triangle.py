@@ -10,7 +10,7 @@ class icosahedron:
         vertices = [(1, PHI, 0), (-1, PHI, 0), (1, -PHI, 0), (-1, -PHI, 0), (0, 1, PHI), (0, 1, -PHI), (0, -1, PHI), (0, -1, -PHI), (PHI, 0, 1), (-PHI, 0, 1), (PHI, 0, -1), (-PHI, 0, -1)]
 
         # Number of Sierpinski iterations desired
-        num_iter = 1
+        num_iter = 0
         faces = []
 
         # Create triangular for icosahedron
@@ -54,12 +54,43 @@ class icosahedron:
         faces.append(face_19.create_graph())
         face_20 = triangle(num_iter, vertices[5], vertices[7], vertices[11])
         faces.append(face_20.create_graph())
-
+        i_graph = faces[0]
         for face in faces:
-            i_graph = nx.disjoint_union(i_graph, face)
+            for node in face.nodes:
+                i_graph = nx.disjoint_union(i_graph, face)
+        
+        seen_pos = []
+        merged_nodes = {}
+        count = 0
+        positions = nx.get_node_attributes(i_graph, 'pos')
+        node_list = list(i_graph.nodes).copy()
 
+        for node in node_list:
+            position = positions[count]
+            if position in seen_pos:
+                merged_nodes[position] = merge(i_graph, merged_nodes[position], node)
+            else:
+                seen_pos.append(position)
+                merged_nodes[position] = node
+            count += 1
+            
+        print(i_graph.nodes())
+        inv_positions = {v: k for k, v in merged_nodes.items()}
+        nx.set_node_attributes(i_graph, inv_positions, 'pos')
+        positions2 = nx.get_node_attributes(i_graph, 'pos')
+        print(positions2)
         self.graph = i_graph
         
+
+def merge(G, n1, n2):
+    pre = G.neighbors(n1)
+    suc = G.neighbors(n2)
+    name = str(n1) + str(n2)
+    G.add_edges_from([(p, name) for p in pre])
+    G.add_edges_from([(name, s) for s in suc])
+    # Remove old nodes
+    G.remove_nodes_from([n1, n2])
+    return name
 
 
 # Helper functions for triangle class
@@ -73,7 +104,6 @@ def triangulate(num_iterations, points):
 
 def midpoint(point1, point2):
     return ((point1[0] + point2[0]) / 2, (point1[1] + point2[1]) / 2, (point1[2] + point2[2]) / 2)
-        
 
 # Defines triangular faces in 3-dimensions
 class triangle:
@@ -90,6 +120,7 @@ class triangle:
         points = self.points
         my_graph = nx.Graph()
         seen = {}
+        connections = []
         count = 0
         for point_set in points:
             curr_nodes = []
@@ -102,8 +133,12 @@ class triangle:
                 else:
                     curr_nodes.append(seen[point])
             my_graph.add_edges_from([(curr_nodes[0], curr_nodes[1]),(curr_nodes[1], curr_nodes[2]),(curr_nodes[2], curr_nodes[0])])
+            connections.append((curr_nodes[0], curr_nodes[1]))
+            connections.append((curr_nodes[1], curr_nodes[2]))
+            connections.append((curr_nodes[2], curr_nodes[0]))
+            
         self.graph = my_graph
-        pass
+        return my_graph
 
     # Note: nx.draw does not work in 3-dimensions, projection to 2-dimensions required
     def draw_triangle(self):
