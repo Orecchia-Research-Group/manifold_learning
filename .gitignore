@@ -11,6 +11,7 @@ manifold_sampling/mala/.ipynb_checkpoints/*
 manifold_sampling/mala/__pycache__/*
 manifold_utils/__pycache__/*
 manifold_sampling/__pycache__/*
+tda_utils/__pycache__/*
 tests/.ipynb_checkpoints/*
 .ipynb_checkpoints/*
 *.png
