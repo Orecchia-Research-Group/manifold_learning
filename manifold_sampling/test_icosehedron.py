@@ -1,21 +1,17 @@
 import numpy as np
 from pymanopt.manifolds import Sphere
+import networkx as nx
+import matplotlib.pyplot as plt
+
 import mala.potentials
 import mala.metropolis_hastings as mh
+import mala.utils as my
 import mala.icosehedron as ico
-import networkx as nx
+
 
 
 def test_chart_maps():
-    G = ico.generate_G(verbose=False)
-    V = ico.generate_V(G)
-
-
-    face_graph,vertex_graph = ico.build_face_graph(V,verify=True)
-
-    # face dict maps nodes in our face graph to ambient_face objects,
-    # which contain geometric information about the face
-    face_dict = ico.build_face_map(face_graph,V)
+    face_graph,vertex_graph,face_dict = ico.generate_icosahedron()
 
     for face_node in face_graph.nodes():
         face_obj = face_dict[face_node]
@@ -78,6 +74,29 @@ def test_transitions():
                                 side_crossings,face_graph)
 
         assert set(predicted_face_obj)==set(destination_node)
+
+# all points in R^3 should be entirely contained within a SINGLE face
+def test_chart_preimages():
+	face_graph,vertex_graph,face_dict = ico.generate_icosahedron()
+	sphere_radius = face_dict[list(face_graph.nodes)[0]].sphere_radius
+
+	point_list = np.random.uniform(low=0.0, high=1.0, 
+		size=(100,3)).tolist()+ [face_dict[face_node].ctd_coors for face_node in face_graph]
+	point_list = [sphere_radius*my.normalize(p) for p in point_list]
+
+	for point in point_list:
+		containers = [face_node for face_node in face_graph.nodes() if 
+			np.all(ico.check_if_point_in_face(point,face_dict[face_node]))]
+		# there should be exactly one face in our list
+		try:
+			assert len(containers)==1
+		except:
+			print('point ',point,' is in ',len(containers),' faces')
+			fig = ico.plot_pt_on_ico(containers,point,return_fig=True)
+			plt.show()
+			break
+
+
 
 
 
