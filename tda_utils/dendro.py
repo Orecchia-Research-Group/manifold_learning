@@ -10,6 +10,7 @@ class tree_node:
 		self.left_child = None
 		self.right_child = None
 		self.parent = None
+		self.n_descendants = 0
 
 	def __str__(self):
 		return str(self.name)
@@ -39,7 +40,7 @@ class tree_node:
 			while True:
 				if ind == max_ind:
 					return default_return
-				elif self.name[ind] < other.name:
+				elif self.name[ind] < other.name[ind]:
 					return True
 				else:
 					ind += 1
@@ -87,7 +88,7 @@ class dendro_forest:
 				right_rep = rep_a
 
 			# Create name of new node
-			new_name = list(temp_1 + temp_2)
+			new_name = list(left_rep.name + right_rep.name)
 			new_name.sort()
 			new_name = tuple(new_name)
 
@@ -98,6 +99,9 @@ class dendro_forest:
 			merge_node.right_child = right_rep
 			left_rep.parent = merge_node
 			right_rep.parent = merge_node
+
+			# assign n_descendants to merge_node
+			merge_node.n_descendants = left_rep.n_descendants + right_rep.n_descendants + 2
 
 			# Update root_map
 			for ind in new_name:
