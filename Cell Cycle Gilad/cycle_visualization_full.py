@@ -85,8 +85,8 @@ for j, pair in tqdm(enumerate(top_h1_full)):
 	thresh = pair.birth()
 	#fig = go.Figure()
 	#fig.add_trace(go.Scatter(x=full_smol[:, 0], y=full_smol[:, 1], mode="markers"))
-	fig = plt.figure()
-	ax = fig.add_subplot(111)
+	fig = plt.figure(figsize=(10, 5))
+	ax = fig.add_subplot(121)
 	ax.scatter(umap_smol[:, 0], umap_smol[:, 1], c="k")
 	edge_x = []
 	edge_y = []
@@ -126,6 +126,14 @@ for j, pair in tqdm(enumerate(top_h1_full)):
 	#fig.update_layout()
 #	for xs, ys in zip(edge_x, edge_y):
 #		ax.plot(xs, ys, c="r", lw=1.0)
+
+	# Make persistence diagram
+	ax2 = fig.add_subplot(122)
+	dgms = ripser(full_smol)["dgms"]
+	plot_diagrams(dgms, show=False, ax=ax2)
+
+	# Emphasize H1 feature of interest
+	ax2.plot(pair.birth(), pair.death(), "ks")
 
 	fig.savefig("which_cycle_full_"+str(j)+".png")
 	plt.close(fig)
